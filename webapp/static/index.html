@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Request Logs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        details {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            max-width: 300px;
+            overflow-wrap: anywhere;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 0;
+            width: 100%;
+            text-align: left;
+        }
+        details[open] {
+            background-color: #f9f9f9;
+        }
+        details > * {
+            margin-left: 0;
+            margin-top: 5px;
+        }
+        .copy-button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 5px;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .copy-button:hover {
+            background-color: #357ab8;
+            transform: translateY(-1px);
+        }
+        .copy-button:active {
+            background-color: #2666a5;
+            transform: translateY(-2px);
+        }
+        .delete-button {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-bottom: 10px;
+            width: auto;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .delete-button:hover {
+            background-color: #c9302c;
+            transform: translateY(-1px);
+        }
+        .delete-button:active {
+            background-color: #ac2925;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <h1>Request Logs</h1>
+    <button class="delete-button" onclick="deleteAllLogs()">Delete All Logs</button>
+    <table id="logsTable">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Method</th>
+                <th>URL</th>
+                <th>Request Headers</th>
+                <th>Request Body</th>
+                <th>Status</th>
+                <th>Response Headers</th>
+                <th>Response Body</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Logs will be inserted here -->
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                const data = await response.json();
+                
+                displayLogs(data);
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+                alert('Failed to fetch logs. Please check the console for details.');
+            }
+        }
+
+        function displayLogs(logs) {
+            const tbody = document.querySelector('#logsTable tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            if (logs===null) {
+                return
+            }
+
+            logs.forEach(log => {
+                const row = document.createElement('tr');
+
+                // Time
+                const timeCell = document.createElement('td');
+                timeCell.textContent = new Date(log.time * 1000).toISOString().replace('T', ' ').substring(0, 19);
+                row.appendChild(timeCell);
+
+                // Method
+                const methodCell = document.createElement('td');
+                methodCell.textContent = log.method;
+                row.appendChild(methodCell);
+
+                // URL
+                const urlCell = document.createElement('td');
+                urlCell.textContent = log.url;
+                row.appendChild(urlCell);
+
+                // Request Headers
+                const requestHeadersCell = document.createElement('td');
+                requestHeadersCell.innerHTML = formatHeaders(log.requestHeaders);
+                row.appendChild(requestHeadersCell);
+
+                // Request Body
+                const requestBodyCell = document.createElement('td');
+                if (log.requestBody) {
+                    const details = document.createElement('details');
+                    const summary = document.createElement('summary');
+                    summary.textContent = 'Request Body';
+                    details.appendChild(summary);
+                    const copyButton = document.createElement('button');
+                    copyButton.textContent = 'Copy';
+                    copyButton.className = 'copy-button';
+                    copyButton.onclick = function() {
+                        navigator.clipboard.writeText(log.requestBody).catch(err => {
+                            console.error('Failed to copy request body: ', err);
+                            alert('Failed to copy request body. Please check the console for details.');
+                        });
+                    };
+                    details.appendChild(copyButton);
+                    const bodyContainer = document.createElement('div');
+                    bodyContainer.style.whiteSpace = 'pre-wrap';
+                    bodyContainer.textContent = log.requestBody;
+                    details.appendChild(bodyContainer);
+                    requestBodyCell.appendChild(details);
+                } else {
+                    requestBodyCell.textContent = '';
+                }
+                row.appendChild(requestBodyCell);
+
+                // Status
+                const statusCell = document.createElement('td');
+                statusCell.textContent = log.status;
+                row.appendChild(statusCell);
+
+                // Response Headers
+                const responseHeadersCell = document.createElement('td');
+                responseHeadersCell.innerHTML = formatHeaders(log.responseHeaders);
+                row.appendChild(responseHeadersCell);
+
+                // Response Body
+                const responseBodyCell = document.createElement('td');
+                if (log.responseBody) {
+                    const detailsResponse = document.createElement('details');
+                    const summaryResponse = document.createElement('summary');
+                    summaryResponse.textContent = 'Response Body';
+                    detailsResponse.appendChild(summaryResponse);
+                    const copyButtonResponse = document.createElement('button');
+                    copyButtonResponse.textContent = 'Copy';
+                    copyButtonResponse.className = 'copy-button';
+                    copyButtonResponse.onclick = function() {
+                        navigator.clipboard.writeText(log.responseBody).catch(err => {
+                            console.error('Failed to copy response body: ', err);
+                            alert('Failed to copy response body. Please check the console for details.');
+                        });
+                    };
+                    detailsResponse.appendChild(copyButtonResponse);
+                    const bodyContainerResponse = document.createElement('div');
+                    bodyContainerResponse.style.whiteSpace = 'pre-wrap';
+                    bodyContainerResponse.textContent = log.responseBody;
+                    detailsResponse.appendChild(bodyContainerResponse);
+                    responseBodyCell.appendChild(detailsResponse);
+                } else {
+                    responseBodyCell.textContent = '';
+        }
+                row.appendChild(responseBodyCell);
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function formatHeaders(headers) {
+            try {
+                const parsed = JSON.parse(headers);
+                let formatted = '';
+                for (const [key, value] of Object.entries(parsed)) {
+                    if (Array.isArray(value)) {
+                        formatted += `${key}: ${value.join(', ')}<br/>`;
+                    } else {
+                        formatted += `${key}: ${value}\n`;
+                    }
+                }
+                return formatted;
+            } catch (e) {
+                return 'Invalid headers format';
+            }
+        }
+
+        // Fetch logs on page load
+        window.onload = fetchLogs;
+
+        async function deleteAllLogs() {
+            try {
+                const response = await fetch('/api/logs', {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                // After deleting, fetch logs again to refresh the table
+                fetchLogs();
+            } catch (error) {
+                console.error('Error deleting logs:', error);
+                alert('Failed to delete logs. Please check the console for details.');
+            }
+        }
+    </script>
+</body>
+</html>
