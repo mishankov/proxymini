@@ -3,3 +3,5 @@
 TODO.md
 compose.yml
 .DS_Store
+# Added by goreleaser init:
+dist/
