@@ -38,3 +38,15 @@ Download binary from [release page](https://github.com/mishankov/proxymini/relea
 ```shell
 docker pull ghcr.io/mishankov/proxymini:latest
 ```
+
+### Dcoker compose example
+
+```yml
+services:
+  proxy:
+    image: ghcr.io/mishankov/proxymini:latest
+    ports:
+      - "14443:14443"
+    volumes:
+      - ./proxymini.conf.toml:/app/proxymini.conf.toml:ro
+```
