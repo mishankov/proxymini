@@ -30,3 +30,11 @@ More specific rules should be before more general ones.
 ProxyMini includes a web interface for viewing request logs. Access it by navigating to `/app`
 
 ![web-ui](docs/images/web.png)
+
+## Deployment
+
+Download binary from [release page](https://github.com/mishankov/proxymini/releases) or use [docker image](https://github.com/mishankov/proxymini/pkgs/container/proxymini):
+
+```shell
+docker pull ghcr.io/mishankov/proxymini:latest
+```
