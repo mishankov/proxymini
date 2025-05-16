@@ -48,5 +48,8 @@ services:
     ports:
       - "14443:14443"
     volumes:
+      # mapping config file to container
       - ./proxymini.conf.toml:/app/proxymini.conf.toml:ro
+      # mapping folder with database
+      - ./data:/app/data:rw
 ```
