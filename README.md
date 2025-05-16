@@ -39,7 +39,7 @@ Download binary from [release page](https://github.com/mishankov/proxymini/relea
 docker pull ghcr.io/mishankov/proxymini:latest
 ```
 
-### Dcoker compose example
+### Docker compose example
 
 ```yml
 services:
