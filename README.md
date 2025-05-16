@@ -1,6 +1,6 @@
 # ProxyMini
 
-ProxyMini is a lightweight reverse proxy server written in Go that provides HTTP request logging capabilities
+ProxyMini is a lightweight proxy server written in Go that provides HTTP request logging capabilities
 
 ## Configuration
 
