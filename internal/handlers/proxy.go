@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"syscall"
@@ -87,5 +88,8 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	reqLog := requestlog.New(r.Method, fullURL(r), r.Header, string(reqBody), resp.StatusCode, resp.Header, string(body))
 
-	ph.rlSvc.Save(reqLog)
+	err = ph.rlSvc.Save(reqLog)
+	if err != nil {
+		log.Println("Error saving log:", err)
+	}
 }
