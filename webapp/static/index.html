@@ -158,12 +158,27 @@
 
                 // Request Headers
                 const requestHeadersCell = document.createElement('td');
-                requestHeadersCell.innerHTML = formatHeaders(log.requestHeaders);
+                const formattedRequestHeaders = formatHeaders(log.requestHeaders);
+
+                if (formatHeaders.length > 300) {
+                    const details = document.createElement('details');
+                    const summary = document.createElement('summary');
+                    summary.textContent = 'Request Headers';
+                    details.appendChild(summary);
+                    const requestHeadersContent = document.createElement('div');
+                    requestHeadersContent.textContent = formattedRequestHeaders;
+                    details.appendChild(requestHeadersContent);
+                    row.appendChild(details);
+                } else {
+                    const requestHeadersContent = document.createElement('div');
+                    requestHeadersContent.textContent = formattedRequestHeaders;
+                    row.appendChild(requestHeadersContent);
+                }
                 row.appendChild(requestHeadersCell);
 
                 // Request Body
                 const requestBodyCell = document.createElement('td');
-                if (log.requestBody) {
+                if (log.requestBody && log.requestBody.length > 300) {
                     const details = document.createElement('details');
                     const summary = document.createElement('summary');
                     summary.textContent = 'Request Body';
@@ -184,7 +199,7 @@
                     details.appendChild(bodyContainer);
                     requestBodyCell.appendChild(details);
                 } else {
-                    requestBodyCell.textContent = '';
+                    requestBodyCell.textContent = log.requestBody || '';
                 }
                 row.appendChild(requestBodyCell);
 
@@ -195,12 +210,27 @@
 
                 // Response Headers
                 const responseHeadersCell = document.createElement('td');
-                responseHeadersCell.innerHTML = formatHeaders(log.responseHeaders);
+                const formattedResponseHeaders = formatHeaders(log.responseHeaders);
+                if (formattedResponseHeaders.length > 300) {
+                    const details = document.createElement('details');
+                    const summary = document.createElement('summary');
+                    summary.textContent = 'Response Headers';
+                    details.appendChild(summary);
+                    const responseHeadersContent = document.createElement('div');
+                    responseHeadersContent.textContent = formattedResponseHeaders;
+                    details.appendChild(responseHeadersContent);
+                    responseHeadersCell.appendChild(details);
+                } else {
+                    const responseHeadersContent = document.createElement('div');
+                    responseHeadersContent.textContent = formattedResponseHeaders;
+                    responseHeadersCell.appendChild(responseHeadersContent);
+                }
+                row.appendChild(responseHeadersCell);
                 row.appendChild(responseHeadersCell);
 
                 // Response Body
                 const responseBodyCell = document.createElement('td');
-                if (log.responseBody) {
+                if (log.responseBody && log.responseBody.length > 300) {
                     const detailsResponse = document.createElement('details');
                     const summaryResponse = document.createElement('summary');
                     summaryResponse.textContent = 'Response Body';
@@ -221,8 +251,8 @@
                     detailsResponse.appendChild(bodyContainerResponse);
                     responseBodyCell.appendChild(detailsResponse);
                 } else {
-                    responseBodyCell.textContent = '';
-        }
+                    responseBodyCell.textContent = log.responseBody || '';
+                }
                 row.appendChild(responseBodyCell);
 
                 tbody.appendChild(row);
