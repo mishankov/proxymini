@@ -58,6 +58,12 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for hn, hvs := range r.Header {
+		for _, hv := range hvs {
+			req.Header.Add(hn, hv)
+		}
+	}
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		handleError(w, fmt.Errorf("error making request: %w", err), http.StatusInternalServerError)
