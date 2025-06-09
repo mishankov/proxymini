@@ -16,11 +16,13 @@
             border: 1px solid #ccc;
             padding: 8px;
             text-align: left;
-            max-width: 300px;
-            overflow-wrap: anywhere;
         }
         th {
             background-color: #f2f2f2;
+        }
+        td {
+            max-width: 300px;
+            overflow-wrap: anywhere;
         }
         details {
             margin-bottom: 15px;
@@ -160,19 +162,19 @@
                 const requestHeadersCell = document.createElement('td');
                 const formattedRequestHeaders = formatHeaders(log.requestHeaders);
 
-                if (formatHeaders.length > 300) {
+                if (formattedRequestHeaders.length > 300) {
                     const details = document.createElement('details');
                     const summary = document.createElement('summary');
                     summary.textContent = 'Request Headers';
                     details.appendChild(summary);
                     const requestHeadersContent = document.createElement('div');
-                    requestHeadersContent.textContent = formattedRequestHeaders;
+                    requestHeadersContent.innerHTML = formattedRequestHeaders;
                     details.appendChild(requestHeadersContent);
-                    row.appendChild(details);
+                    requestHeadersCell.appendChild(details);
                 } else {
                     const requestHeadersContent = document.createElement('div');
-                    requestHeadersContent.textContent = formattedRequestHeaders;
-                    row.appendChild(requestHeadersContent);
+                    requestHeadersContent.innerHTML = formattedRequestHeaders;
+                    requestHeadersCell.appendChild(requestHeadersContent);
                 }
                 row.appendChild(requestHeadersCell);
 
@@ -217,12 +219,12 @@
                     summary.textContent = 'Response Headers';
                     details.appendChild(summary);
                     const responseHeadersContent = document.createElement('div');
-                    responseHeadersContent.textContent = formattedResponseHeaders;
+                    responseHeadersContent.innerHTML = formattedResponseHeaders;
                     details.appendChild(responseHeadersContent);
                     responseHeadersCell.appendChild(details);
                 } else {
                     const responseHeadersContent = document.createElement('div');
-                    responseHeadersContent.textContent = formattedResponseHeaders;
+                    responseHeadersContent.innerHTML = formattedResponseHeaders;
                     responseHeadersCell.appendChild(responseHeadersContent);
                 }
                 row.appendChild(responseHeadersCell);
