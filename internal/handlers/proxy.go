@@ -80,6 +80,8 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	http.NewResponseController(w).Flush()
 
+	w.WriteHeader(resp.StatusCode)
+
 	body, err := utils.CopyBuffer(w, resp.Body, []byte{})
 	// Some clients cause `write: broken pipe` error in the end of a request. This seems to be ok, so ignore `syscall.EPIPE`.
 	if err != nil && !errors.Is(err, syscall.EPIPE) {
