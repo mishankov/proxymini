@@ -30,7 +30,7 @@ func main() {
 
 	rlSvc := services.NewRequestLogService(rlDB)
 
-	proxyHandler := handlers.NewProxyHandler(rlSvc)
+	proxyHandler := handlers.NewProxyHandler(rlSvc, conf)
 	rlHandler := handlers.NewRequestLogHandler(rlSvc)
 
 	server := http.NewServeMux()

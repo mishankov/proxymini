@@ -48,3 +48,20 @@ func New() (*Config, error) {
 
 	return &config, nil
 }
+
+func (c *Config) ReloadProxies() error {
+	data, err := os.ReadFile(c.ConfigPath)
+	if err != nil {
+		return err
+	}
+
+	var freshConfig Config
+	_, err = toml.Decode(string(data), &freshConfig)
+	if err != nil {
+		return err
+	}
+
+	c.Proxies = freshConfig.Proxies
+
+	return nil
+}

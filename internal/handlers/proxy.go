@@ -17,17 +17,18 @@ import (
 )
 
 type ProxyHandler struct {
-	rlSvc *services.RequestLogService
+	rlSvc  *services.RequestLogService
+	config *config.Config
 }
 
-func NewProxyHandler(rlSvc *services.RequestLogService) *ProxyHandler {
-	return &ProxyHandler{rlSvc: rlSvc}
+func NewProxyHandler(rlSvc *services.RequestLogService, config *config.Config) *ProxyHandler {
+	return &ProxyHandler{rlSvc: rlSvc, config: config}
 }
 
 func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Proxy-Mini", "true")
 
-	config, err := config.New()
+	err := ph.config.ReloadProxies()
 	if err != nil {
 		handleError(w, fmt.Errorf("error getting config: %w", err), http.StatusInternalServerError)
 		return
@@ -35,7 +36,7 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	target := ""
 	prefix := ""
-	for _, proxy := range config.Proxies {
+	for _, proxy := range ph.config.Proxies {
 		if strings.HasPrefix(r.URL.Path, proxy.Prefix) {
 			target = proxy.Target
 			prefix = proxy.Prefix
@@ -77,8 +78,6 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add(hn, hv)
 		}
 	}
-
-	http.NewResponseController(w).Flush()
 
 	w.WriteHeader(resp.StatusCode)
 
