@@ -78,8 +78,6 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.NewResponseController(w).Flush()
-
 	w.WriteHeader(resp.StatusCode)
 
 	body, err := utils.CopyBuffer(w, resp.Body, []byte{})
