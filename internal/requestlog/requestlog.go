@@ -12,6 +12,7 @@ type RequestLog struct {
 	ID              string `json:"id"`
 	Time            int64  `json:"time"`
 	Method          string `json:"method"`
+	ProxyURL        string `db:"proxy_url" json:"proxyUrl"`
 	URL             string `json:"url"`
 	RequestHeaders  string `db:"request_headers" json:"requestHeaders"`
 	RequestBody     string `db:"request_body" json:"requestBody"`
@@ -20,7 +21,7 @@ type RequestLog struct {
 	ResponseBody    string `db:"response_body" json:"responseBody"`
 }
 
-func New(method, URL string, requestHeaders http.Header, requestBody string, status int, responseHeaders http.Header, responseBody string) RequestLog {
+func New(method, proxyURL, URL string, requestHeaders http.Header, requestBody string, status int, responseHeaders http.Header, responseBody string) RequestLog {
 	requestHeadersBytes, _ := json.Marshal(requestHeaders)
 	responseHeadersBytes, _ := json.Marshal(responseHeaders)
 
@@ -28,6 +29,7 @@ func New(method, URL string, requestHeaders http.Header, requestBody string, sta
 		ID:              uuid.NewString(),
 		Time:            time.Now().UTC().Unix(),
 		Method:          method,
+		ProxyURL:        proxyURL,
 		URL:             URL,
 		RequestHeaders:  string(requestHeadersBytes),
 		RequestBody:     requestBody,
