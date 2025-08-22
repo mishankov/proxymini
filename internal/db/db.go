@@ -14,7 +14,8 @@ func Init(db *sqlx.DB) error {
 CREATE TABLE IF NOT EXISTS request_log (
     id TEXT PRIMARY KEY,  
     time BIGINT NOT NULL,   
-    method VARCHAR(100),    
+    method TEXT,  
+    proxy_url TEXT,
     url TEXT,               
     request_headers TEXT,   
     request_body TEXT,      

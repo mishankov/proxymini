@@ -103,6 +103,7 @@
             <tr>
                 <th>Time</th>
                 <th>Method</th>
+                <th>Proxy URL</th>
                 <th>URL</th>
                 <th>Request Headers</th>
                 <th>Request Body</th>
@@ -152,6 +153,11 @@
                 const methodCell = document.createElement('td');
                 methodCell.textContent = log.method;
                 row.appendChild(methodCell);
+
+                // Proxy URL
+                const proxyURLCell = document.createElement('td');
+                proxyURLCell.textContent = log.proxyUrl;
+                row.appendChild(proxyURLCell);
 
                 // URL
                 const urlCell = document.createElement('td');

@@ -54,7 +54,15 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := http.NewRequest(r.Method, target+strings.TrimPrefix(r.URL.Path, prefix), bytes.NewReader(reqBody))
+	targetUrl := target + strings.TrimPrefix(r.URL.Path, prefix)
+	if r.URL.RawQuery != "" {
+		targetUrl += "?" + r.URL.RawQuery
+	}
+	if r.URL.Fragment != "" {
+		targetUrl += "#" + r.URL.Fragment
+	}
+
+	req, err := http.NewRequest(r.Method, targetUrl, bytes.NewReader(reqBody))
 	if err != nil {
 		handleError(w, fmt.Errorf("error creating request: %w", err), http.StatusInternalServerError)
 		return
@@ -87,7 +95,7 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		handleError(w, fmt.Errorf("error copying buffer: %w", err), http.StatusInternalServerError)
 	}
 
-	reqLog := requestlog.New(r.Method, fullURL(r), r.Header, string(reqBody), resp.StatusCode, resp.Header, string(body))
+	reqLog := requestlog.New(r.Method, fullURL(r), targetUrl, r.Header, string(reqBody), resp.StatusCode, resp.Header, string(body))
 
 	err = ph.rlSvc.Save(reqLog)
 	if err != nil {
