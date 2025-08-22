@@ -54,7 +54,8 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := http.NewRequest(r.Method, target+strings.TrimPrefix(r.URL.Path, prefix), bytes.NewReader(reqBody))
+	r.URL.Path = target + strings.TrimPrefix(r.URL.Path, prefix)
+	req, err := http.NewRequest(r.Method, r.URL.Path, bytes.NewReader(reqBody))
 	if err != nil {
 		handleError(w, fmt.Errorf("error creating request: %w", err), http.StatusInternalServerError)
 		return
