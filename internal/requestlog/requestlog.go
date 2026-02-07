@@ -11,6 +11,7 @@ import (
 type RequestLog struct {
 	ID              string `json:"id"`
 	Time            int64  `json:"time"`
+	ElapsedMS       int64  `db:"elapsed_ms" json:"elapsedMs"`
 	Method          string `json:"method"`
 	ProxyURL        string `db:"proxy_url" json:"proxyUrl"`
 	URL             string `json:"url"`
@@ -21,13 +22,22 @@ type RequestLog struct {
 	ResponseBody    string `db:"response_body" json:"responseBody"`
 }
 
-func New(method, proxyURL, URL string, requestHeaders http.Header, requestBody string, status int, responseHeaders http.Header, responseBody string) RequestLog {
+func New(
+	method, proxyURL, URL string,
+	requestHeaders http.Header,
+	requestBody string,
+	status int,
+	responseHeaders http.Header,
+	responseBody string,
+	elapsedMS int64,
+) RequestLog {
 	requestHeadersBytes, _ := json.Marshal(requestHeaders)
 	responseHeadersBytes, _ := json.Marshal(responseHeaders)
 
 	return RequestLog{
 		ID:              uuid.NewString(),
 		Time:            time.Now().UTC().Unix(),
+		ElapsedMS:       elapsedMS,
 		Method:          method,
 		ProxyURL:        proxyURL,
 		URL:             URL,

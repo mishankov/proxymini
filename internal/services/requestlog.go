@@ -50,8 +50,8 @@ func (rls *RequestLogService) GetList() ([]requestlog.RequestLog, error) {
 
 func (rls *RequestLogService) save(rl requestlog.RequestLog) error {
 	_, err := rls.db.Exec(
-		"INSERT INTO request_log (id, time, method, proxy_url, url, request_headers, request_body, status, response_headers, response_body) VALUES (?,?,?,?,?,?,?,?,?,?)",
-		rl.ID, rl.Time, rl.Method, rl.ProxyURL, rl.URL, rl.RequestHeaders, rl.RequestBody, rl.Status, rl.ResponseHeaders, rl.ResponseBody,
+		"INSERT INTO request_log (id, time, elapsed_ms, method, proxy_url, url, request_headers, request_body, status, response_headers, response_body) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+		rl.ID, rl.Time, rl.ElapsedMS, rl.Method, rl.ProxyURL, rl.URL, rl.RequestHeaders, rl.RequestBody, rl.Status, rl.ResponseHeaders, rl.ResponseBody,
 	)
 
 	return err
