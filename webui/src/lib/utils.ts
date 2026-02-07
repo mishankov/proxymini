@@ -375,6 +375,14 @@ export function formatTimestamp(unixSeconds: number): string {
 	return date.toISOString().replace("T", " ").substring(0, 19);
 }
 
+export function formatElapsed(elapsedMs: number): string {
+	if (elapsedMs < 1000) {
+		return `${elapsedMs} ms`;
+	}
+
+	return `${(elapsedMs / 1000).toFixed(2)} s`;
+}
+
 export function statusClassOf(status: number): StatusClass {
 	if (status >= 200 && status < 300) {
 		return "2xx";
@@ -432,6 +440,7 @@ export function buildSearchBlob(log: RequestLog): string {
 			log.id,
 			log.method,
 			String(log.status),
+			String(log.elapsedMs),
 			log.proxyUrl,
 			log.url,
 			log.requestHeaders,
@@ -451,6 +460,7 @@ export function enrichLog(log: RequestLog): EnrichedLog {
 		methodNormalized: normalizeMethod(log.method),
 		statusClass: statusClassOf(Number(log.status)),
 		timeFormatted: formatTimestamp(Number(log.time)),
+		elapsedFormatted: formatElapsed(Number(log.elapsedMs)),
 		requestHeadersEntries: toHeaderEntries(requestHeadersParsed),
 		responseHeadersEntries: toHeaderEntries(responseHeadersParsed),
 		searchBlob: buildSearchBlob(log)

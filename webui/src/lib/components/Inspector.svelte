@@ -31,6 +31,7 @@
 			{
 				id: selected.id,
 				time: selected.time,
+				elapsedMs: selected.elapsedMs,
 				method: selected.method,
 				proxyUrl: selected.proxyUrl,
 				url: selected.url,
@@ -87,6 +88,10 @@
 					<dl class="min-w-0">
 						<dt class="font-mono text-[11px] uppercase tracking-[0.08em] text-slate-400">Status</dt>
 						<dd class={`mt-1 font-mono text-xs ${STATUS_TEXT_CLASSES[selected.statusClass]}`}>{selected.status}</dd>
+					</dl>
+					<dl class="min-w-0">
+						<dt class="font-mono text-[11px] uppercase tracking-[0.08em] text-slate-400">Elapsed</dt>
+						<dd class="mt-1 font-mono text-xs text-slate-200">{selected.elapsedFormatted}</dd>
 					</dl>
 					<dl class="min-w-0">
 						<dt class="font-mono text-[11px] uppercase tracking-[0.08em] text-slate-400">Proxy URL</dt>
@@ -147,6 +152,10 @@
 				<div class="rounded-lg bg-slate-800/50 p-2">
 					<p class="mb-1 font-mono text-[11px] uppercase tracking-[0.08em] text-slate-400">Response Body Size</p>
 					<p class="font-mono text-xs text-slate-100">{responseBodySize(selected)} bytes</p>
+				</div>
+				<div class="rounded-lg bg-slate-800/50 p-2">
+					<p class="mb-1 font-mono text-[11px] uppercase tracking-[0.08em] text-slate-400">Elapsed</p>
+					<p class="font-mono text-xs text-slate-100">{selected.elapsedFormatted}</p>
 				</div>
 				<div class="rounded-lg bg-slate-800/50 p-2">
 					<p class="mb-1 font-mono text-[11px] uppercase tracking-[0.08em] text-slate-400">Request Headers</p>

@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 )
@@ -14,6 +16,7 @@ func Init(db *sqlx.DB) error {
 CREATE TABLE IF NOT EXISTS request_log (
     id TEXT PRIMARY KEY,  
     time BIGINT NOT NULL,   
+    elapsed_ms BIGINT NOT NULL DEFAULT 0,
     method TEXT,  
     proxy_url TEXT,
     url TEXT,               
@@ -23,6 +26,43 @@ CREATE TABLE IF NOT EXISTS request_log (
     response_headers TEXT,  
     response_body TEXT      
 );`)
+	if err != nil {
+		return err
+	}
 
-	return err
+	rows, err := db.Queryx("PRAGMA table_info(request_log)")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	hasElapsedMS := false
+	for rows.Next() {
+		var cid int
+		var name string
+		var typ string
+		var notnull int
+		var dfltValue any
+		var pk int
+
+		if err := rows.Scan(&cid, &name, &typ, &notnull, &dfltValue, &pk); err != nil {
+			return err
+		}
+
+		if name == "elapsed_ms" {
+			hasElapsedMS = true
+			break
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	if !hasElapsedMS {
+		if _, err := db.Exec("ALTER TABLE request_log ADD COLUMN elapsed_ms BIGINT NOT NULL DEFAULT 0"); err != nil {
+			return fmt.Errorf("migrate request_log.elapsed_ms: %w", err)
+		}
+	}
+
+	return nil
 }

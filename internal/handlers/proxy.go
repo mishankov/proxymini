@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/mishankov/proxymini/internal/config"
 	"github.com/mishankov/proxymini/internal/requestlog"
@@ -27,6 +28,7 @@ func NewProxyHandler(rlSvc *services.RequestLogService, config *config.Config) *
 
 func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Proxy-Mini", "true")
+	startedAt := time.Now()
 
 	err := ph.config.ReloadProxies()
 	if err != nil {
@@ -95,7 +97,18 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		handleError(w, fmt.Errorf("error copying buffer: %w", err), http.StatusInternalServerError)
 	}
 
-	reqLog := requestlog.New(r.Method, fullURL(r), targetUrl, r.Header, string(reqBody), resp.StatusCode, resp.Header, string(body))
+	elapsedMS := time.Since(startedAt).Milliseconds()
+	reqLog := requestlog.New(
+		r.Method,
+		fullURL(r),
+		targetUrl,
+		r.Header,
+		string(reqBody),
+		resp.StatusCode,
+		resp.Header,
+		string(body),
+		elapsedMS,
+	)
 
 	err = ph.rlSvc.Save(reqLog)
 	if err != nil {

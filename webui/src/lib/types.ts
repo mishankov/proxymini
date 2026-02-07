@@ -1,6 +1,7 @@
 export interface RequestLog {
 	id: string;
 	time: number;
+	elapsedMs: number;
 	method: string;
 	proxyUrl: string;
 	url: string;
@@ -31,8 +32,8 @@ export interface EnrichedLog extends RequestLog {
 	methodNormalized: string;
 	statusClass: StatusClass;
 	timeFormatted: string;
+	elapsedFormatted: string;
 	requestHeadersEntries: HeaderEntry[];
 	responseHeadersEntries: HeaderEntry[];
 	searchBlob: string;
 }
-

@@ -76,7 +76,7 @@
 								</p>
 							</div>
 							<span class="col-start-3 row-start-2 justify-self-end font-mono text-[11px] text-slate-400 md:col-start-4 md:row-start-1">
-								{log.timeFormatted}
+								{log.elapsedFormatted} · {log.timeFormatted}
 							</span>
 						</button>
 					</li>
