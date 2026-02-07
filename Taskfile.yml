@@ -1,0 +1,49 @@
+version: "3"
+
+tasks:
+  ui:install:
+    desc: Install frontend dependencies
+    dir: webui
+    cmds:
+      - bun install
+
+  ui:build:
+    desc: Build static UI into webapp/static
+    dir: webui
+    cmds:
+      - bun install --frozen-lockfile
+      - bun run build
+      - touch ../webapp/static/.gitkeep
+
+  ui:dev:
+    desc: Run SvelteKit dev server
+    dir: webui
+    cmds:
+      - bun install --frozen-lockfile
+      - bun run dev
+
+  ui:check:
+    desc: Typecheck and Svelte diagnostics
+    dir: webui
+    cmds:
+      - bun install --frozen-lockfile
+      - bun run check
+
+  build:
+    desc: Build UI and backend binary
+    deps: [ui:build]
+    cmds:
+      - mkdir -p build
+      - go build -o ./build/proxymini ./cmd/proxymini
+
+  run:
+    desc: Build UI and run backend
+    deps: [ui:build]
+    cmds:
+      - go run ./cmd/proxymini
+
+  test:
+    desc: Run frontend checks and backend tests
+    cmds:
+      - task ui:check
+      - go test ./...

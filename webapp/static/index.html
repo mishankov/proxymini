@@ -1,306 +1,47 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Request Logs</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        td {
-            max-width: 300px;
-            overflow-wrap: anywhere;
-        }
-        details {
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            padding: 10px;
-            max-width: 300px;
-            overflow-wrap: anywhere;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 5px;
-        }
-        summary {
-            font-weight: bold;
-            cursor: pointer;
-            padding: 5px 0;
-            width: 100%;
-            text-align: left;
-        }
-        details[open] {
-            background-color: #f9f9f9;
-        }
-        details > * {
-            margin-left: 0;
-            margin-top: 5px;
-        }
-        .copy-button {
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            margin-top: 5px;
-            width: 100%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .copy-button:hover {
-            background-color: #357ab8;
-            transform: translateY(-1px);
-        }
-        .copy-button:active {
-            background-color: #2666a5;
-            transform: translateY(-2px);
-        }
-        .delete-button {
-            background-color: #d9534f;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            margin-bottom: 10px;
-            width: auto;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .delete-button:hover {
-            background-color: #c9302c;
-            transform: translateY(-1px);
-        }
-        .delete-button:active {
-            background-color: #ac2925;
-            transform: translateY(-2px);
-        }
-    </style>
-</head>
-<body>
-    <h1>Request Logs</h1>
-    <button class="delete-button" onclick="deleteAllLogs()">Delete All Logs</button>
-    <table id="logsTable">
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Method</th>
-                <th>Proxy URL</th>
-                <th>URL</th>
-                <th>Request Headers</th>
-                <th>Request Body</th>
-                <th>Status</th>
-                <th>Response Headers</th>
-                <th>Response Body</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Logs will be inserted here -->
-        </tbody>
-    </table>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		
+		<link href="./_app/immutable/assets/0.BpS_7wjc.css" rel="stylesheet">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.Bo1XXbYi.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/DZnu2uYi.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/DcF41SyF.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/Ch5AUtie.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.BCHdxogn.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/DFGyFmu1.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/Bi9s3HTe.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/2BXPHYHg.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/DxXIrZFz.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/0.C1T3p2-y.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/2.CuPCKavu.js">
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents"><!--[--><!--[--><!----><!----><div class="app"><header class="topbar"><div class="title-block"><div class="title-row"><h1 class="title">ProxyMini</h1> <!--[!--><!--]--></div> <div class="search-wrap"><span>/</span> <input id="searchInput" type="text" placeholder="Search URL, proxy, headers, body" aria-label="Search logs" value=""/></div></div> <div class="filter-blocks"><div class="filter-row"><span class="filter-label">Method</span> <div class="chip-group" aria-label="Method filters"><!--[--><button type="button" class="chip" aria-label="Toggle GET filter" aria-pressed="false">GET</button><button type="button" class="chip" aria-label="Toggle POST filter" aria-pressed="false">POST</button><button type="button" class="chip" aria-label="Toggle PUT filter" aria-pressed="false">PUT</button><button type="button" class="chip" aria-label="Toggle PATCH filter" aria-pressed="false">PATCH</button><button type="button" class="chip" aria-label="Toggle DELETE filter" aria-pressed="false">DELETE</button><button type="button" class="chip" aria-label="Toggle OPTIONS filter" aria-pressed="false">OPTIONS</button><!--]--></div></div> <div class="filter-row"><span class="filter-label">Status</span> <div class="chip-group" aria-label="Status filters"><!--[--><button type="button" class="chip" aria-label="Toggle 2xx filter" aria-pressed="false">2xx</button><button type="button" class="chip" aria-label="Toggle 3xx filter" aria-pressed="false">3xx</button><button type="button" class="chip" aria-label="Toggle 4xx filter" aria-pressed="false">4xx</button><button type="button" class="chip" aria-label="Toggle 5xx filter" aria-pressed="false">5xx</button><!--]--></div></div></div> <div class="actions"><button type="button" class="btn pause" aria-label="Pause auto refresh">Pause</button> <button type="button" class="btn primary" aria-label="Refresh logs now">Refresh</button> <label for="sortSelect" class="sr-only">Sort logs</label> <select id="sortSelect" class="select" aria-label="Sort logs"><option value="timeDesc" selected>Newest first</option><option value="timeAsc">Oldest first</option><option value="statusDesc">Highest status first</option></select> <button type="button" class="btn warning" aria-label="Delete all logs">Delete All</button></div></header><!----> <main class="workspace"><section class="panel"><div class="panel-head"><h2 class="panel-title">Event Stream</h2> <div class="panel-meta">0 visible / 0 total</div></div> <div class="list-wrap"><!--[--><div class="empty-state">No logs match active filters.</div><!--]--></div> <div class="list-foot"><!--[!--><!--]--></div></section><!----> <section class="panel inspector"><div class="inspector-head"><div><h2 class="inspector-title"><!--[!-->Select a request log<!--]--></h2> <!--[!--><!--]--></div> <div class="payload-actions"><button type="button" class="tiny-btn" disabled>Copy Log JSON</button></div></div> <div class="tabs" role="tablist" aria-label="Inspector tabs"><!--[--><button type="button" class="tab active" role="tab" aria-selected="true">overview</button><button type="button" class="tab " role="tab" aria-selected="false">request</button><button type="button" class="tab " role="tab" aria-selected="false">response</button><button type="button" class="tab " role="tab" aria-selected="false">headers</button><button type="button" class="tab " role="tab" aria-selected="false">raw</button><!--]--></div> <div class="tab-panel-wrap"><!--[--><div class="empty-state">No log selected.</div><!--]--></div></section><!----></main> <footer class="status-strip"><div>0 matched · showing 0 · polling every 3s</div> <div class="status-active-filters">No active filters</div></footer><!----> <!--[!--><!--]--><!----> <div class="toast " role="status" aria-live="polite"></div></div><!----><!----><!----><!--]--> <!--[!--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_79b4tb = {
+						base: new URL(".", location).pathname.slice(0, -1),
+						assets: "/app"
+					};
 
-    <script>
-        async function fetchLogs() {
-            try {
-                const response = await fetch('/api/logs');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
-                }
-                const data = await response.json();
-                
-                displayLogs(data);
-            } catch (error) {
-                console.error('Error fetching logs:', error);
-                alert('Failed to fetch logs. Please check the console for details.');
-            }
-        }
+					const element = document.currentScript.parentElement;
 
-        function displayLogs(logs) {
-            const tbody = document.querySelector('#logsTable tbody');
-            tbody.innerHTML = ''; // Clear existing rows
-
-            if (logs===null) {
-                return
-            }
-
-            logs.forEach(log => {
-                const row = document.createElement('tr');
-
-                // Time
-                const timeCell = document.createElement('td');
-                timeCell.textContent = new Date(log.time * 1000).toISOString().replace('T', ' ').substring(0, 19);
-                row.appendChild(timeCell);
-
-                // Method
-                const methodCell = document.createElement('td');
-                methodCell.textContent = log.method;
-                row.appendChild(methodCell);
-
-                // Proxy URL
-                const proxyURLCell = document.createElement('td');
-                proxyURLCell.textContent = log.proxyUrl;
-                row.appendChild(proxyURLCell);
-
-                // URL
-                const urlCell = document.createElement('td');
-                urlCell.textContent = log.url;
-                row.appendChild(urlCell);
-
-                // Request Headers
-                const requestHeadersCell = document.createElement('td');
-                const formattedRequestHeaders = formatHeaders(log.requestHeaders);
-
-                if (formattedRequestHeaders.length > 300) {
-                    const details = document.createElement('details');
-                    const summary = document.createElement('summary');
-                    summary.textContent = 'Request Headers';
-                    details.appendChild(summary);
-                    const requestHeadersContent = document.createElement('div');
-                    requestHeadersContent.innerHTML = formattedRequestHeaders;
-                    details.appendChild(requestHeadersContent);
-                    requestHeadersCell.appendChild(details);
-                } else {
-                    const requestHeadersContent = document.createElement('div');
-                    requestHeadersContent.innerHTML = formattedRequestHeaders;
-                    requestHeadersCell.appendChild(requestHeadersContent);
-                }
-                row.appendChild(requestHeadersCell);
-
-                // Request Body
-                const requestBodyCell = document.createElement('td');
-                if (log.requestBody && log.requestBody.length > 300) {
-                    const details = document.createElement('details');
-                    const summary = document.createElement('summary');
-                    summary.textContent = 'Request Body';
-                    details.appendChild(summary);
-                    const copyButton = document.createElement('button');
-                    copyButton.textContent = 'Copy';
-                    copyButton.className = 'copy-button';
-                    copyButton.onclick = function() {
-                        navigator.clipboard.writeText(log.requestBody).catch(err => {
-                            console.error('Failed to copy request body: ', err);
-                            alert('Failed to copy request body. Please check the console for details.');
-                        });
-                    };
-                    details.appendChild(copyButton);
-                    const bodyContainer = document.createElement('div');
-                    bodyContainer.style.whiteSpace = 'pre-wrap';
-                    bodyContainer.textContent = log.requestBody;
-                    details.appendChild(bodyContainer);
-                    requestBodyCell.appendChild(details);
-                } else {
-                    requestBodyCell.textContent = log.requestBody || '';
-                }
-                row.appendChild(requestBodyCell);
-
-                // Status
-                const statusCell = document.createElement('td');
-                statusCell.textContent = log.status;
-                row.appendChild(statusCell);
-
-                // Response Headers
-                const responseHeadersCell = document.createElement('td');
-                const formattedResponseHeaders = formatHeaders(log.responseHeaders);
-                if (formattedResponseHeaders.length > 300) {
-                    const details = document.createElement('details');
-                    const summary = document.createElement('summary');
-                    summary.textContent = 'Response Headers';
-                    details.appendChild(summary);
-                    const responseHeadersContent = document.createElement('div');
-                    responseHeadersContent.innerHTML = formattedResponseHeaders;
-                    details.appendChild(responseHeadersContent);
-                    responseHeadersCell.appendChild(details);
-                } else {
-                    const responseHeadersContent = document.createElement('div');
-                    responseHeadersContent.innerHTML = formattedResponseHeaders;
-                    responseHeadersCell.appendChild(responseHeadersContent);
-                }
-                row.appendChild(responseHeadersCell);
-
-                // Response Body
-                const responseBodyCell = document.createElement('td');
-                if (log.responseBody && log.responseBody.length > 300) {
-                    const detailsResponse = document.createElement('details');
-                    const summaryResponse = document.createElement('summary');
-                    summaryResponse.textContent = 'Response Body';
-                    detailsResponse.appendChild(summaryResponse);
-                    const copyButtonResponse = document.createElement('button');
-                    copyButtonResponse.textContent = 'Copy';
-                    copyButtonResponse.className = 'copy-button';
-                    copyButtonResponse.onclick = function() {
-                        navigator.clipboard.writeText(log.responseBody).catch(err => {
-                            console.error('Failed to copy response body: ', err);
-                            alert('Failed to copy response body. Please check the console for details.');
-                        });
-                    };
-                    detailsResponse.appendChild(copyButtonResponse);
-                    const bodyContainerResponse = document.createElement('div');
-                    bodyContainerResponse.style.whiteSpace = 'pre-wrap';
-                    bodyContainerResponse.textContent = log.responseBody;
-                    detailsResponse.appendChild(bodyContainerResponse);
-                    responseBodyCell.appendChild(detailsResponse);
-                } else {
-                    responseBodyCell.textContent = log.responseBody || '';
-                }
-                row.appendChild(responseBodyCell);
-
-                tbody.appendChild(row);
-            });
-        }
-
-        function formatHeaders(headers) {
-            try {
-                const parsed = JSON.parse(headers);
-                let formatted = '';
-                for (const [key, value] of Object.entries(parsed)) {
-                    if (Array.isArray(value)) {
-                        formatted += `${key}: ${value.join(', ')}<br/>`;
-                    } else {
-                        formatted += `${key}: ${value}\n`;
-                    }
-                }
-                return formatted;
-            } catch (e) {
-                return 'Invalid headers format';
-            }
-        }
-
-        // Fetch logs on page load
-        window.onload = fetchLogs;
-
-        async function deleteAllLogs() {
-            try {
-                const response = await fetch('/api/logs', {
-                    method: 'DELETE'
-                });
-                if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
-                }
-                // After deleting, fetch logs again to refresh the table
-                fetchLogs();
-            } catch (error) {
-                console.error('Error deleting logs:', error);
-                alert('Failed to delete logs. Please check the console for details.');
-            }
-        }
-    </script>
-</body>
+					Promise.all([
+						import("./_app/immutable/entry/start.Bo1XXbYi.js"),
+						import("./_app/immutable/entry/app.BCHdxogn.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 2],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+	</body>
 </html>

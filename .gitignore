@@ -5,3 +5,9 @@ compose.yml
 .DS_Store
 # Added by goreleaser init:
 dist/
+webui/node_modules/
+webui/.svelte-kit/
+webui/.vite/
+webui/.cache/
+webapp/static/*
+!webapp/static/.gitkeep
