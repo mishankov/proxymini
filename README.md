@@ -31,6 +31,33 @@ ProxyMini includes a web interface for viewing request logs. Access it by naviga
 
 ![web-ui](docs/images/web.png)
 
+### Frontend Development (SvelteKit + Bun)
+
+The UI source lives in `webui/` and is built as a static site into `webapp/static/`.
+The `webapp/static/` contents are generated and are not committed to git.
+
+Prerequisites:
+- [Bun](https://bun.sh/)
+- [Task](https://taskfile.dev/) (recommended command runner)
+
+Common commands:
+```shell
+# install frontend dependencies
+task ui:install
+
+# build static UI into webapp/static
+task ui:build
+
+# run sveltekit dev server
+task ui:dev
+
+# build UI + backend binary
+task build
+
+# run UI checks + backend tests
+task test
+```
+
 ## Deployment
 
 Download binary from [release page](https://github.com/mishankov/proxymini/releases) or use [docker image](https://github.com/mishankov/proxymini/pkgs/container/proxymini):
