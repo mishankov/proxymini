@@ -1,8 +1,9 @@
 <svelte:options runes={true} />
 
 <script lang="ts">
-	import { createEventDispatcher } from "svelte";
+	import { TINY_BUTTON_BASE_CLASSES } from "$lib/ui-classes";
 	import { detectBodySyntax, formatBodyForDisplay, highlightText, renderPayloadHtml } from "$lib/utils";
+	import { createEventDispatcher } from "svelte";
 
 	type Props = {
 		title: string;
@@ -37,24 +38,26 @@
 	const renderedHtml = $derived(value ? renderPayloadHtml(value, search, contentType) : highlightText(emptyLabel, search));
 </script>
 
-<section class="payload-section">
-	<div class="payload-head">
-		<h3 class="payload-title">{title}</h3>
-		<div class="payload-actions">
+<section class="overflow-hidden rounded-lg bg-slate-800/50">
+	<div class="flex items-center justify-between gap-2 bg-slate-800/80 px-3 py-2">
+		<h3 class="font-mono text-xs uppercase tracking-[0.08em] text-slate-300">{title}</h3>
+		<div class="flex flex-wrap gap-2">
 			<button
 				type="button"
-				class="tiny-btn"
+				class={TINY_BUTTON_BASE_CLASSES}
 				onclick={() => dispatch("copy", { value: value ?? "", message: copyMessage })}
 			>
 				Copy
 			</button>
 			{#if isLong}
-				<button type="button" class="tiny-btn" onclick={() => (expanded = !expanded)}>
+				<button type="button" class={TINY_BUTTON_BASE_CLASSES} onclick={() => (expanded = !expanded)}>
 					{expanded ? "Collapse" : "Expand"}
 				</button>
 			{/if}
 		</div>
 	</div>
 
-	<pre class="payload-content {isLong && !expanded ? 'clamped' : ''}">{@html renderedHtml}</pre>
+	<pre
+		class={`overflow-auto whitespace-pre-wrap break-words p-3 font-mono text-xs leading-6 text-slate-100 ${isLong && !expanded ? "max-h-48" : "max-h-[30rem]"}`}
+	>{@html renderedHtml}</pre>
 </section>
