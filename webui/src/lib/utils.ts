@@ -24,6 +24,324 @@ export function highlightText(value: string, query: string): string {
 	return escapedValue.replace(matcher, "<mark>$1</mark>");
 }
 
+export type BodySyntax = "plain" | "json" | "xml";
+
+const JSON_TOKEN_REGEX =
+	/"(?:\\.|[^"\\])*"(?=\s*:)|"(?:\\.|[^"\\])*"|\b-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?\b|\btrue\b|\bfalse\b|\bnull\b|[{}\[\]:,]/g;
+const XML_NODE_REGEX = /<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<!DOCTYPE[\s\S]*?>|<\/?[A-Za-z_][\w:.-]*(?:\s+[^<>]*?)?\/?>/gi;
+
+type ParseJSONResult =
+	| {
+			ok: true;
+			value: unknown;
+	  }
+	| {
+			ok: false;
+	  };
+
+function parseJSON(value: string): ParseJSONResult {
+	try {
+		return { ok: true, value: JSON.parse(value) };
+	} catch {
+		return { ok: false };
+	}
+}
+
+function highlightEscapedSegment(value: string, query: string): string {
+	const trimmed = query.trim();
+	if (!trimmed) {
+		return escapeHtml(value);
+	}
+
+	const matcher = new RegExp(`(${escapeRegExp(trimmed)})`, "ig");
+	const parts = value.split(matcher);
+	if (parts.length === 0) {
+		return "";
+	}
+
+	return parts
+		.map((part) => {
+			if (!part) {
+				return "";
+			}
+			if (part.toLowerCase() === trimmed.toLowerCase()) {
+				return `<mark>${escapeHtml(part)}</mark>`;
+			}
+			return escapeHtml(part);
+		})
+		.join("");
+}
+
+function wrapToken(className: string, value: string, query: string): string {
+	return `<span class="${className}">${highlightEscapedSegment(value, query)}</span>`;
+}
+
+function renderTokenized(
+	value: string,
+	query: string,
+	pattern: RegExp,
+	renderToken: (token: string, index: number, source: string) => string
+): string {
+	pattern.lastIndex = 0;
+
+	let rendered = "";
+	let cursor = 0;
+	let match: RegExpExecArray | null;
+
+	while ((match = pattern.exec(value)) !== null) {
+		const token = match[0];
+		const start = match.index;
+
+		rendered += highlightEscapedSegment(value.slice(cursor, start), query);
+		rendered += renderToken(token, start, value);
+		cursor = start + token.length;
+	}
+
+	rendered += highlightEscapedSegment(value.slice(cursor), query);
+	return rendered;
+}
+
+function isJSONContentType(contentType: string): boolean {
+	return contentType === "application/json" || contentType.endsWith("+json");
+}
+
+function isXMLContentType(contentType: string): boolean {
+	return contentType === "application/xml" || contentType === "text/xml" || contentType.endsWith("+xml");
+}
+
+function isLikelyXML(value: string): boolean {
+	const trimmed = value.trim();
+	if (!trimmed || !trimmed.startsWith("<") || !trimmed.endsWith(">")) {
+		return false;
+	}
+
+	XML_NODE_REGEX.lastIndex = 0;
+
+	const stack: string[] = [];
+	let cursor = 0;
+	let foundElement = false;
+	let match: RegExpExecArray | null;
+
+	while ((match = XML_NODE_REGEX.exec(trimmed)) !== null) {
+		const token = match[0];
+		const gap = trimmed.slice(cursor, match.index);
+		if (gap.includes("<") || gap.includes(">")) {
+			return false;
+		}
+
+		if (token.startsWith("</")) {
+			const nameMatch = token.match(/^<\/([A-Za-z_][\w:.-]*)/);
+			const name = nameMatch?.[1];
+			if (!name) {
+				return false;
+			}
+
+			const current = stack.pop();
+			if (current !== name) {
+				return false;
+			}
+		} else if (token.startsWith("<!") || token.startsWith("<?")) {
+			// Ignore declarations and comments in structural matching.
+		} else {
+			const nameMatch = token.match(/^<([A-Za-z_][\w:.-]*)/);
+			const name = nameMatch?.[1];
+			if (!name) {
+				return false;
+			}
+
+			foundElement = true;
+			if (!token.endsWith("/>")) {
+				stack.push(name);
+			}
+		}
+
+		cursor = match.index + token.length;
+	}
+
+	const tail = trimmed.slice(cursor);
+	if (tail.includes("<") || tail.includes(">")) {
+		return false;
+	}
+
+	return foundElement && stack.length === 0;
+}
+
+function renderJSONHtml(value: string, query: string): string {
+	return renderTokenized(value, query, JSON_TOKEN_REGEX, (token, index, source) => {
+		if (token.startsWith('"')) {
+			let cursor = index + token.length;
+			while (cursor < source.length && /\s/.test(source[cursor])) {
+				cursor += 1;
+			}
+
+			const className = source[cursor] === ":" ? "token-json-key" : "token-json-string";
+			return wrapToken(className, token, query);
+		}
+
+		if (token === "true" || token === "false") {
+			return wrapToken("token-json-boolean", token, query);
+		}
+
+		if (token === "null") {
+			return wrapToken("token-json-null", token, query);
+		}
+
+		if (/^[{}\[\]:,]$/.test(token)) {
+			return wrapToken("token-json-punctuation", token, query);
+		}
+
+		return wrapToken("token-json-number", token, query);
+	});
+}
+
+function renderXMLAttributes(attributes: string, query: string): string {
+	if (!attributes) {
+		return "";
+	}
+
+	const ATTR_REGEX = /([^\s=/>]+)(\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]+))?/g;
+	ATTR_REGEX.lastIndex = 0;
+
+	let rendered = "";
+	let cursor = 0;
+	let match: RegExpExecArray | null;
+
+	while ((match = ATTR_REGEX.exec(attributes)) !== null) {
+		const [raw, name, assignment = ""] = match;
+		const start = match.index;
+
+		rendered += highlightEscapedSegment(attributes.slice(cursor, start), query);
+		rendered += wrapToken("token-xml-attr-name", name, query);
+
+		if (assignment) {
+			const assignmentMatch = assignment.match(/^(\s*=\s*)([\s\S]+)$/);
+			if (assignmentMatch) {
+				rendered += highlightEscapedSegment(assignmentMatch[1], query);
+				rendered += wrapToken("token-xml-attr-value", assignmentMatch[2], query);
+			} else {
+				rendered += highlightEscapedSegment(assignment, query);
+			}
+		}
+
+		cursor = start + raw.length;
+	}
+
+	rendered += highlightEscapedSegment(attributes.slice(cursor), query);
+	return rendered;
+}
+
+function renderXMLTagToken(token: string, query: string): string {
+	if (!token.startsWith("<")) {
+		return highlightEscapedSegment(token, query);
+	}
+
+	let openBracket = "<";
+	let closeBracket = ">";
+	let inner = token.slice(1, -1);
+
+	if (token.startsWith("</")) {
+		openBracket = "</";
+		inner = token.slice(2, -1);
+	} else if (token.endsWith("/>")) {
+		closeBracket = "/>";
+		inner = token.slice(1, -2);
+	}
+
+	const nameMatch = inner.match(/^(\s*)([^\s/>]+)([\s\S]*)$/);
+	if (!nameMatch) {
+		return wrapToken("token-xml-tag", token, query);
+	}
+
+	const [, leadingSpace, name, attributes] = nameMatch;
+
+	return (
+		wrapToken("token-xml-bracket", openBracket, query) +
+		highlightEscapedSegment(leadingSpace, query) +
+		wrapToken("token-xml-tag", name, query) +
+		renderXMLAttributes(attributes, query) +
+		wrapToken("token-xml-bracket", closeBracket, query)
+	);
+}
+
+function renderXMLHtml(value: string, query: string): string {
+	return renderTokenized(value, query, XML_NODE_REGEX, (token) => {
+		if (token.startsWith("<!--")) {
+			return wrapToken("token-xml-comment", token, query);
+		}
+
+		if (token.startsWith("<?") || token.toUpperCase().startsWith("<!DOCTYPE")) {
+			return wrapToken("token-xml-prolog", token, query);
+		}
+
+		return renderXMLTagToken(token, query);
+	});
+}
+
+export function normalizeContentType(contentType = ""): string {
+	return contentType.split(";")[0]?.trim().toLowerCase() ?? "";
+}
+
+export function detectBodySyntax(body: string, contentType = ""): BodySyntax {
+	if (!body) {
+		return "plain";
+	}
+
+	const normalizedContentType = normalizeContentType(contentType);
+	if (isJSONContentType(normalizedContentType)) {
+		return "json";
+	}
+
+	if (isXMLContentType(normalizedContentType)) {
+		return "xml";
+	}
+
+	if (parseJSON(body).ok) {
+		return "json";
+	}
+
+	if (isLikelyXML(body)) {
+		return "xml";
+	}
+
+	return "plain";
+}
+
+export function formatBodyForDisplay(body: string, syntax: BodySyntax): string {
+	if (!body) {
+		return "";
+	}
+
+	if (syntax !== "json") {
+		return body;
+	}
+
+	const parsed = parseJSON(body);
+	if (!parsed.ok) {
+		return body;
+	}
+
+	return JSON.stringify(parsed.value, null, 2);
+}
+
+export function renderPayloadHtml(body: string, query: string, contentType = ""): string {
+	if (!body) {
+		return "";
+	}
+
+	const syntax = detectBodySyntax(body, contentType);
+	const formattedBody = formatBodyForDisplay(body, syntax);
+
+	if (syntax === "json") {
+		return renderJSONHtml(formattedBody, query);
+	}
+
+	if (syntax === "xml") {
+		return renderXMLHtml(formattedBody, query);
+	}
+
+	return highlightText(formattedBody, query);
+}
+
 export function safeParseJSON(value: string): unknown | null {
 	if (!value) {
 		return null;

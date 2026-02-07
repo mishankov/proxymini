@@ -41,8 +41,17 @@
 			},
 			null,
 			2
-		);
+			);
 	});
+
+	function findHeaderValue(entries: Array<{ key: string; value: string }>, headerName: string): string {
+		const lookup = headerName.toLowerCase();
+		const matched = entries.find((entry) => entry.key.toLowerCase() === lookup);
+		return matched?.value ?? "";
+	}
+
+	const requestContentType = $derived(selected ? findHeaderValue(selected.requestHeadersEntries, "content-type") : "");
+	const responseContentType = $derived(selected ? findHeaderValue(selected.responseHeadersEntries, "content-type") : "");
 
 	function requestBodySize(log: EnrichedLog | null): number {
 		return (log?.requestBody ?? "").length;
@@ -140,6 +149,7 @@
 				<PayloadPanel
 					title="Request Body"
 					value={selected.requestBody || ""}
+					contentType={requestContentType}
 					search={search}
 					copyMessage="Request body copied"
 					on:copy={(event) => dispatch("copyValue", event.detail)}
@@ -150,6 +160,7 @@
 				<PayloadPanel
 					title="Response Body"
 					value={selected.responseBody || ""}
+					contentType={responseContentType}
 					search={search}
 					copyMessage="Response body copied"
 					on:copy={(event) => dispatch("copyValue", event.detail)}

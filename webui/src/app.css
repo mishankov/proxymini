@@ -797,12 +797,57 @@ body::after {
 }
 
 .payload-content.clamped {
-    max-height: 190px;
+	max-height: 190px;
+}
+
+.payload-content .token-json-key {
+	color: #9ec6eb;
+}
+
+.payload-content .token-json-string {
+	color: #c8deaa;
+}
+
+.payload-content .token-json-number {
+	color: #d9ba87;
+}
+
+.payload-content .token-json-boolean {
+	color: #cfb0dd;
+}
+
+.payload-content .token-json-null {
+	color: #d59aa5;
+}
+
+.payload-content .token-json-punctuation {
+	color: #89a2c0;
+}
+
+.payload-content .token-xml-bracket {
+	color: #88abc9;
+}
+
+.payload-content .token-xml-tag {
+	color: #9ec6eb;
+}
+
+.payload-content .token-xml-attr-name {
+	color: #b8d4ef;
+}
+
+.payload-content .token-xml-attr-value {
+	color: #c8deaa;
+}
+
+.payload-content .token-xml-comment,
+.payload-content .token-xml-prolog {
+	color: #7f96af;
 }
 
 mark {
-    background: rgba(214, 186, 134, 0.24);
-    color: #f7f0df;
+	background: rgba(214, 186, 134, 0.24);
+	color: #f7f0df;
     border-radius: 3px;
     padding: 0 2px;
 }
