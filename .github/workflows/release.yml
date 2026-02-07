@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: set up bun
         uses: oven-sh/setup-bun@v2
@@ -24,12 +24,12 @@ jobs:
           bun run build
 
       - name: set up go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: stable
 
       - name: run goreleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
           args: release --clean
