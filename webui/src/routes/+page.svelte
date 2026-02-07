@@ -7,6 +7,7 @@
 	import StatusStrip from "$lib/components/StatusStrip.svelte";
 	import TopBar from "$lib/components/TopBar.svelte";
 	import { DEFAULT_SORT, INITIAL_RENDER_LIMIT, POLL_INTERVAL_MS, RENDER_STEP, TAB_OPTIONS } from "$lib/constants";
+	import { TOAST_STATE_CLASSES } from "$lib/ui-classes";
 	import type { EnrichedLog, InspectorTab, RequestLog, SortOption, StatusFilter } from "$lib/types";
 	import { dedupeByID, enrichLog, normalizeText } from "$lib/utils";
 	import { onMount } from "svelte";
@@ -355,7 +356,7 @@
 	});
 </script>
 
-<div class="app">
+<div class="relative z-10 grid min-h-screen grid-rows-[auto_1fr_auto] gap-3 p-2 pb-20 sm:p-4 sm:pb-24">
 	<TopBar
 		search={searchQuery}
 		selectedMethods={selectedMethods}
@@ -373,7 +374,7 @@
 		on:applyIncoming={applyIncoming}
 	/>
 
-	<main class="workspace">
+	<main class="grid min-h-0 gap-3 xl:grid-cols-[minmax(22rem,0.95fr)_minmax(28rem,1.05fr)]">
 		<LogList
 			logs={visibleLogs}
 			{selectedLogId}
@@ -399,5 +400,11 @@
 
 	<DeleteModal open={showDeleteModal} on:cancel={closeDeleteModal} on:confirm={(event) => confirmDelete(event.detail)} />
 
-	<div class="toast {toastVisible ? 'show' : ''}" role="status" aria-live="polite">{toastMessage}</div>
+	<div
+		class={`fixed top-3 right-3 z-40 rounded-md bg-slate-900/95 px-3 py-2 font-mono text-xs text-slate-100 shadow-md transition ${toastVisible ? TOAST_STATE_CLASSES.visible : TOAST_STATE_CLASSES.hidden}`}
+		role="status"
+		aria-live="polite"
+	>
+		{toastMessage}
+	</div>
 </div>

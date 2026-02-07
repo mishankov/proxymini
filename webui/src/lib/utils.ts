@@ -29,6 +29,22 @@ export type BodySyntax = "plain" | "json" | "xml";
 const JSON_TOKEN_REGEX =
 	/"(?:\\.|[^"\\])*"(?=\s*:)|"(?:\\.|[^"\\])*"|\b-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?\b|\btrue\b|\bfalse\b|\bnull\b|[{}\[\]:,]/g;
 const XML_NODE_REGEX = /<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<!DOCTYPE[\s\S]*?>|<\/?[A-Za-z_][\w:.-]*(?:\s+[^<>]*?)?\/?>/gi;
+const JSON_TOKEN_CLASSES = {
+	key: "text-sky-300",
+	string: "text-lime-300",
+	number: "text-amber-300",
+	boolean: "text-fuchsia-300",
+	null: "text-rose-300",
+	punctuation: "text-slate-300"
+} as const;
+const XML_TOKEN_CLASSES = {
+	bracket: "text-sky-200",
+	tag: "text-sky-300",
+	attrName: "text-cyan-200",
+	attrValue: "text-lime-300",
+	comment: "text-slate-500",
+	prolog: "text-slate-500"
+} as const;
 
 type ParseJSONResult =
 	| {
@@ -174,23 +190,23 @@ function renderJSONHtml(value: string, query: string): string {
 				cursor += 1;
 			}
 
-			const className = source[cursor] === ":" ? "token-json-key" : "token-json-string";
+			const className = source[cursor] === ":" ? JSON_TOKEN_CLASSES.key : JSON_TOKEN_CLASSES.string;
 			return wrapToken(className, token, query);
 		}
 
 		if (token === "true" || token === "false") {
-			return wrapToken("token-json-boolean", token, query);
+			return wrapToken(JSON_TOKEN_CLASSES.boolean, token, query);
 		}
 
 		if (token === "null") {
-			return wrapToken("token-json-null", token, query);
+			return wrapToken(JSON_TOKEN_CLASSES.null, token, query);
 		}
 
 		if (/^[{}\[\]:,]$/.test(token)) {
-			return wrapToken("token-json-punctuation", token, query);
+			return wrapToken(JSON_TOKEN_CLASSES.punctuation, token, query);
 		}
 
-		return wrapToken("token-json-number", token, query);
+		return wrapToken(JSON_TOKEN_CLASSES.number, token, query);
 	});
 }
 
@@ -211,13 +227,13 @@ function renderXMLAttributes(attributes: string, query: string): string {
 		const start = match.index;
 
 		rendered += highlightEscapedSegment(attributes.slice(cursor, start), query);
-		rendered += wrapToken("token-xml-attr-name", name, query);
+		rendered += wrapToken(XML_TOKEN_CLASSES.attrName, name, query);
 
 		if (assignment) {
 			const assignmentMatch = assignment.match(/^(\s*=\s*)([\s\S]+)$/);
 			if (assignmentMatch) {
 				rendered += highlightEscapedSegment(assignmentMatch[1], query);
-				rendered += wrapToken("token-xml-attr-value", assignmentMatch[2], query);
+				rendered += wrapToken(XML_TOKEN_CLASSES.attrValue, assignmentMatch[2], query);
 			} else {
 				rendered += highlightEscapedSegment(assignment, query);
 			}
@@ -249,28 +265,28 @@ function renderXMLTagToken(token: string, query: string): string {
 
 	const nameMatch = inner.match(/^(\s*)([^\s/>]+)([\s\S]*)$/);
 	if (!nameMatch) {
-		return wrapToken("token-xml-tag", token, query);
+		return wrapToken(XML_TOKEN_CLASSES.tag, token, query);
 	}
 
 	const [, leadingSpace, name, attributes] = nameMatch;
 
 	return (
-		wrapToken("token-xml-bracket", openBracket, query) +
+		wrapToken(XML_TOKEN_CLASSES.bracket, openBracket, query) +
 		highlightEscapedSegment(leadingSpace, query) +
-		wrapToken("token-xml-tag", name, query) +
+		wrapToken(XML_TOKEN_CLASSES.tag, name, query) +
 		renderXMLAttributes(attributes, query) +
-		wrapToken("token-xml-bracket", closeBracket, query)
+		wrapToken(XML_TOKEN_CLASSES.bracket, closeBracket, query)
 	);
 }
 
 function renderXMLHtml(value: string, query: string): string {
 	return renderTokenized(value, query, XML_NODE_REGEX, (token) => {
 		if (token.startsWith("<!--")) {
-			return wrapToken("token-xml-comment", token, query);
+			return wrapToken(XML_TOKEN_CLASSES.comment, token, query);
 		}
 
 		if (token.startsWith("<?") || token.toUpperCase().startsWith("<!DOCTYPE")) {
-			return wrapToken("token-xml-prolog", token, query);
+			return wrapToken(XML_TOKEN_CLASSES.prolog, token, query);
 		}
 
 		return renderXMLTagToken(token, query);
