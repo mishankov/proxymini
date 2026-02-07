@@ -43,7 +43,7 @@ jobs:
         run: go build -o ./build/proxymini ./cmd/proxymini
 
       - name: Upload executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: proxymini-${{ matrix.os }}
           path: build
