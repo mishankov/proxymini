@@ -25,8 +25,9 @@ type Config struct {
 }
 
 type Proxy struct {
-	Prefix string `toml:"prefix"`
-	Target string `toml:"target"`
+	Prefix      string `toml:"prefix"`
+	Target      string `toml:"target"`
+	SkipLogging bool   `toml:"skipLogging"`
 }
 
 func New() (*Config, error) {

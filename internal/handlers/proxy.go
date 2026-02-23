@@ -38,10 +38,12 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	target := ""
 	prefix := ""
+	skipLogging := false
 	for _, proxy := range ph.config.Proxies {
 		if strings.HasPrefix(r.URL.Path, proxy.Prefix) {
 			target = proxy.Target
 			prefix = proxy.Prefix
+			skipLogging = proxy.SkipLogging
 		}
 	}
 
@@ -98,20 +100,23 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	elapsedMS := time.Since(startedAt).Milliseconds()
-	reqLog := requestlog.New(
-		r.Method,
-		fullURL(r),
-		targetUrl,
-		r.Header,
-		string(reqBody),
-		resp.StatusCode,
-		resp.Header,
-		string(body),
-		elapsedMS,
-	)
 
-	err = ph.rlSvc.Save(reqLog)
-	if err != nil {
-		log.Println("Error saving log:", err)
+	if !skipLogging {
+		reqLog := requestlog.New(
+			r.Method,
+			fullURL(r),
+			targetUrl,
+			r.Header,
+			string(reqBody),
+			resp.StatusCode,
+			resp.Header,
+			string(body),
+			elapsedMS,
+		)
+
+		err = ph.rlSvc.Save(reqLog)
+		if err != nil {
+			log.Println("Error saving log:", err)
+		}
 	}
 }
