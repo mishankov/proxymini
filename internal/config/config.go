@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -17,10 +18,26 @@ func getStringOrDefault(name, def string) string {
 	return strings.TrimSpace(value)
 }
 
+func getIntOrDefault(name string, def int) int {
+	value := os.Getenv(name)
+	if value == "" {
+		return def
+	}
+
+	var result int
+	_, err := fmt.Sscanf(value, "%d", &result)
+	if err != nil {
+		return def
+	}
+
+	return result
+}
+
 type Config struct {
 	Port       string
 	ConfigPath string
 	DBPath     string
+	Retention  int
 	Proxies    []Proxy `toml:"proxy"`
 }
 
@@ -35,6 +52,7 @@ func New() (*Config, error) {
 	config.Port = getStringOrDefault("PROXYMINI_PORT", "14443")
 	config.ConfigPath = getStringOrDefault("PROXYMINI_CONFIG", "proxymini.conf.toml")
 	config.DBPath = getStringOrDefault("PROXYMINI_DB", "rl.db")
+	config.Retention = getIntOrDefault("PROXYMINI_RETENTION", 0) // 0 means no retention (keep all logs)
 
 	data, err := os.ReadFile(config.ConfigPath)
 	if err != nil {
