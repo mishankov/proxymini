@@ -1,11 +1,11 @@
-package handlers
+package proxy
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"syscall"
@@ -13,16 +13,16 @@ import (
 
 	"github.com/mishankov/proxymini/internal/config"
 	"github.com/mishankov/proxymini/internal/requestlog"
-	"github.com/mishankov/proxymini/internal/services"
 	"github.com/mishankov/proxymini/internal/utils"
+	"github.com/platforma-dev/platforma/log"
 )
 
 type ProxyHandler struct {
-	rlSvc  *services.RequestLogService
+	rlSvc  *requestlog.RequestLogService
 	config *config.Config
 }
 
-func NewProxyHandler(rlSvc *services.RequestLogService, config *config.Config) *ProxyHandler {
+func NewProxyHandler(rlSvc *requestlog.RequestLogService, config *config.Config) *ProxyHandler {
 	return &ProxyHandler{rlSvc: rlSvc, config: config}
 }
 
@@ -116,7 +116,37 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		err = ph.rlSvc.Save(reqLog)
 		if err != nil {
-			log.Println("Error saving log:", err)
+			log.ErrorContext(r.Context(), "failed to save request log", "error", err)
 		}
 	}
+}
+
+func handleError(w http.ResponseWriter, err error, status int) {
+	log.ErrorContext(context.Background(), "request handling error", "status", status, "error", err)
+	// w.WriteHeader(status)
+	w.Write([]byte(err.Error()))
+}
+
+// fullURL returns the full URL of the incoming request, including protocol, host, path, query parameters, and fragment.
+func fullURL(r *http.Request) string {
+	builder := strings.Builder{}
+
+	if r.TLS != nil {
+		builder.WriteString("https://")
+	} else {
+		builder.WriteString("http://")
+	}
+
+	builder.WriteString(r.Host)
+	builder.WriteString(r.URL.Path)
+
+	if r.URL.RawQuery != "" {
+		builder.WriteString("?" + r.URL.RawQuery)
+	}
+
+	if r.URL.Fragment != "" {
+		builder.WriteString("#" + r.URL.Fragment)
+	}
+
+	return builder.String()
 }

@@ -40,7 +40,7 @@ tasks:
     desc: Build UI and run backend
     deps: [ui:build]
     cmds:
-      - go run ./cmd/proxymini
+      - go run ./cmd/proxymini run
 
   test:
     desc: Run frontend checks and backend tests

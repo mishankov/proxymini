@@ -1,33 +1,31 @@
-package services
+package requestlog
 
 import (
-	"log"
-
 	"github.com/jmoiron/sqlx"
-	"github.com/mishankov/proxymini/internal/requestlog"
+	"github.com/platforma-dev/platforma/log"
 )
 
 type RequestLogService struct {
 	db           *sqlx.DB
-	requestLogCh chan requestlog.RequestLog
+	requestLogCh chan RequestLog
 }
 
 func NewRequestLogService(db *sqlx.DB) *RequestLogService {
-	ch := make(chan requestlog.RequestLog)
+	ch := make(chan RequestLog)
 	rls := &RequestLogService{db: db, requestLogCh: ch}
 	go func() {
 		for l := range ch {
 			err := rls.save(l)
 			if err != nil {
-				log.Println("Error saving request log from channel:", err)
+				log.Error("failed to save request log from channel", "error", err)
 			}
 		}
 	}()
 	return rls
 }
 
-func (rls *RequestLogService) GetList() ([]requestlog.RequestLog, error) {
-	var res []requestlog.RequestLog
+func (rls *RequestLogService) GetList() ([]RequestLog, error) {
+	var res []RequestLog
 
 	rows, err := rls.db.Queryx("SELECT * FROM request_log ORDER BY time DESC")
 	if err != nil {
@@ -35,7 +33,7 @@ func (rls *RequestLogService) GetList() ([]requestlog.RequestLog, error) {
 	}
 
 	for rows.Next() {
-		var rl requestlog.RequestLog
+		var rl RequestLog
 
 		err = rows.StructScan(&rl)
 		if err != nil {
@@ -48,7 +46,7 @@ func (rls *RequestLogService) GetList() ([]requestlog.RequestLog, error) {
 	return res, nil
 }
 
-func (rls *RequestLogService) save(rl requestlog.RequestLog) error {
+func (rls *RequestLogService) save(rl RequestLog) error {
 	_, err := rls.db.Exec(
 		"INSERT INTO request_log (id, time, elapsed_ms, method, proxy_url, url, request_headers, request_body, status, response_headers, response_body) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
 		rl.ID, rl.Time, rl.ElapsedMS, rl.Method, rl.ProxyURL, rl.URL, rl.RequestHeaders, rl.RequestBody, rl.Status, rl.ResponseHeaders, rl.ResponseBody,
@@ -57,7 +55,7 @@ func (rls *RequestLogService) save(rl requestlog.RequestLog) error {
 	return err
 }
 
-func (rls *RequestLogService) Save(rl requestlog.RequestLog) error {
+func (rls *RequestLogService) Save(rl RequestLog) error {
 	rls.requestLogCh <- rl
 	return nil
 }

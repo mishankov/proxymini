@@ -17,4 +17,4 @@ COPY --from=builder /app/proxymini /app/proxymini
 RUN mkdir /app/data
 ENV PROXYMINI_DB="/app/data/rl.db"
 WORKDIR /app
-CMD ["./proxymini"]
+CMD ["./proxymini", "run"]

@@ -1,47 +1,39 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"context"
+	"os"
 
+	"github.com/mishankov/proxymini/internal/app"
 	"github.com/mishankov/proxymini/internal/config"
 	"github.com/mishankov/proxymini/internal/db"
-	"github.com/mishankov/proxymini/internal/handlers"
-	"github.com/mishankov/proxymini/internal/services"
-	frontend "github.com/mishankov/proxymini/webapp"
+	"github.com/platforma-dev/platforma/log"
 )
 
 func main() {
+	ctx := context.Background()
+
 	conf, err := config.New()
 	if err != nil {
-		log.Fatal(err)
+		log.ErrorContext(ctx, "failed to load config", "error", err)
+		os.Exit(1)
 	}
 
 	rlDB, err := db.Connect(conf.DBPath)
 	if err != nil {
-		log.Fatal(err)
+		log.ErrorContext(ctx, "failed to connect to request log database", "error", err)
+		os.Exit(1)
 	}
 	defer rlDB.Close()
 
-	err = db.Init(rlDB)
+	app, err := app.Build(conf, rlDB)
 	if err != nil {
-		log.Fatal(err)
+		log.ErrorContext(ctx, "failed to build runtime", "error", err)
+		os.Exit(1)
 	}
 
-	rlSvc := services.NewRequestLogService(rlDB)
-
-	proxyHandler := handlers.NewProxyHandler(rlSvc, conf)
-	rlHandler := handlers.NewRequestLogHandler(rlSvc)
-	appFileServer := http.FileServer(http.FS(frontend.Assets()))
-
-	server := http.NewServeMux()
-	server.HandleFunc("/app", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/app/", http.StatusTemporaryRedirect)
-	})
-	server.Handle("/app/", http.StripPrefix("/app", appFileServer))
-	server.Handle("/api/logs", rlHandler)
-	server.Handle("/", proxyHandler)
-
-	log.Println("Starting server at: http://localhost:" + conf.Port)
-	log.Fatal(http.ListenAndServe(":"+conf.Port, server))
+	if err := app.Run(ctx); err != nil {
+		log.ErrorContext(ctx, "application run failed", "error", err)
+		os.Exit(1)
+	}
 }
