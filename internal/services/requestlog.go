@@ -2,6 +2,7 @@ package services
 
 import (
 	"log"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/mishankov/proxymini/internal/requestlog"
@@ -65,5 +66,11 @@ func (rls *RequestLogService) Save(rl requestlog.RequestLog) error {
 func (rls *RequestLogService) DeleteAll() error {
 	_, err := rls.db.Exec("DELETE FROM request_log")
 
+	return err
+}
+
+func (rls *RequestLogService) DeleteOldLogs(retentionSeconds int) error {
+	cutoffTime := time.Now().Unix() - int64(retentionSeconds)
+	_, err := rls.db.Exec("DELETE FROM request_log WHERE time < ?", cutoffTime)
 	return err
 }
