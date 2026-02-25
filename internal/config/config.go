@@ -21,6 +21,7 @@ type Config struct {
 	Port       string
 	ConfigPath string
 	DBPath     string
+	Retention  int     `toml:"retention"`
 	Proxies    []Proxy `toml:"proxy"`
 }
 

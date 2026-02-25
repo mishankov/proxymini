@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/mishankov/proxymini/internal/config"
 	"github.com/mishankov/proxymini/internal/db"
@@ -30,6 +31,11 @@ func main() {
 
 	rlSvc := services.NewRequestLogService(rlDB)
 
+	// Start retention scheduler if retention is configured
+	if conf.Retention > 0 {
+		go startRetentionScheduler(rlSvc, conf.Retention)
+	}
+
 	proxyHandler := handlers.NewProxyHandler(rlSvc, conf)
 	rlHandler := handlers.NewRequestLogHandler(rlSvc)
 	appFileServer := http.FileServer(http.FS(frontend.Assets()))
@@ -44,4 +50,19 @@ func main() {
 
 	log.Println("Starting server at: http://localhost:" + conf.Port)
 	log.Fatal(http.ListenAndServe(":"+conf.Port, server))
+}
+
+func startRetentionScheduler(rlSvc *services.RequestLogService, retentionSeconds int) {
+	ticker := time.NewTicker(time.Duration(retentionSeconds) * time.Second)
+	defer ticker.Stop()
+
+	log.Printf("Starting logs retention scheduler (retention: %d seconds)\n", retentionSeconds)
+
+	for range ticker.C {
+		if err := rlSvc.DeleteOlderThan(int64(retentionSeconds)); err != nil {
+			log.Println("Error deleting old logs:", err)
+		} else {
+			log.Println("Old logs cleaned up successfully")
+		}
+	}
 }
