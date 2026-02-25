@@ -34,11 +34,14 @@ func main() {
 	rlHandler := handlers.NewRequestLogHandler(rlSvc)
 	appFileServer := http.FileServer(http.FS(frontend.Assets()))
 
+	authHandler := handlers.NewAuthHandler(conf, appFileServer)
+
 	server := http.NewServeMux()
+	server.HandleFunc("/login", authHandler.HandleLogin)
 	server.HandleFunc("/app", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/app/", http.StatusTemporaryRedirect)
 	})
-	server.Handle("/app/", http.StripPrefix("/app", appFileServer))
+	server.Handle("/app/", authHandler.RequireAuth(http.StripPrefix("/app", appFileServer)))
 	server.Handle("/api/logs", rlHandler)
 	server.Handle("/", proxyHandler)
 
