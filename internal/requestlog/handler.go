@@ -1,18 +1,19 @@
-package handlers
+package requestlog
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/mishankov/proxymini/internal/services"
+	"github.com/platforma-dev/platforma/log"
 )
 
 type RequestLogHandler struct {
-	rlSvc *services.RequestLogService
+	rlSvc *RequestLogService
 }
 
-func NewRequestLogHandler(rlSvc *services.RequestLogService) *RequestLogHandler {
+func NewRequestLogHandler(rlSvc *RequestLogService) *RequestLogHandler {
 	return &RequestLogHandler{rlSvc: rlSvc}
 }
 
@@ -44,4 +45,10 @@ func (rlh *RequestLogHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			handleError(w, fmt.Errorf("deleting request logs: %w", err), http.StatusInternalServerError)
 		}
 	}
+}
+
+func handleError(w http.ResponseWriter, err error, status int) {
+	log.ErrorContext(context.Background(), "request handling error", "status", status, "error", err)
+	// w.WriteHeader(status)
+	w.Write([]byte(err.Error()))
 }

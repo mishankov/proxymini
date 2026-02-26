@@ -5,10 +5,10 @@ tasks:
     desc: Install frontend dependencies
     dir: webui
     cmds:
-      - bun install
+      - bun install --frozen-lockfile
 
   ui:build:
-    desc: Build static UI into webapp/static
+    desc: Build static UI
     dir: webui
     cmds:
       - bun install --frozen-lockfile
@@ -40,10 +40,10 @@ tasks:
     desc: Build UI and run backend
     deps: [ui:build]
     cmds:
-      - go run ./cmd/proxymini
+      - go run ./cmd/proxymini run
 
   test:
     desc: Run frontend checks and backend tests
     cmds:
       - task ui:check
-      - go test ./...
+      - go test --cover -race ./...

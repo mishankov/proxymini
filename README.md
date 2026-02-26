@@ -25,6 +25,25 @@ target = "http://auth-service:9000"
 
 More specific rules should be before more general ones.
 
+## Runtime commands
+
+ProxyMini now runs on Platforma's `application` + `httpserver` packages.
+
+```shell
+# start proxy server
+go run ./cmd/proxymini run
+
+# show available commands
+go run ./cmd/proxymini --help
+```
+
+### SQLite migrations
+
+ProxyMini still uses SQLite for request logs.
+
+- SQLite schema migration runs automatically during `run` as a startup task.
+- `migrate` command is intentionally a no-op for SQLite, because Platforma's native database migration command targets PostgreSQL repositories.
+
 ## Web UI
 
 ProxyMini includes a web interface for viewing request logs. Access it by navigating to `/app`
