@@ -16,7 +16,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-server:
+  build:
     strategy:
       matrix:
         os: [ubuntu, windows, macos]
@@ -33,6 +33,7 @@ jobs:
         working-directory: ./webui
         run: |
           bun install --frozen-lockfile
+          bun run check
           bun run build
 
       - uses: actions/setup-go@v6
