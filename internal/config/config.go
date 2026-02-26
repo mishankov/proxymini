@@ -21,6 +21,7 @@ type Config struct {
 	Port       string
 	ConfigPath string
 	DBPath     string
+	AuthToken  string
 	Proxies    []Proxy `toml:"proxy"`
 }
 
@@ -36,6 +37,7 @@ func New() (*Config, error) {
 	config.Port = getStringOrDefault("PROXYMINI_PORT", "14443")
 	config.ConfigPath = getStringOrDefault("PROXYMINI_CONFIG", "proxymini.conf.toml")
 	config.DBPath = getStringOrDefault("PROXYMINI_DB", "rl.db")
+	config.AuthToken = getStringOrDefault("PROXYMINI_AUTH_TOKEN", "")
 
 	data, err := os.ReadFile(config.ConfigPath)
 	if err != nil {
