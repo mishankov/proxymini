@@ -9,6 +9,7 @@ ProxyMini is a lightweight proxy server written in Go that provides HTTP request
 - `PROXYMINI_PORT`: The port on which the ProxyMini server will listen. Default is 14443.
 - `PROXYMINI_CONFIG`: The path to the TOML configuration file. Default is "proxymini.conf.toml".
 - `PROXYMINI_DB`: The path to the database file used for request logging. Default is "rl.db".
+- `PROXYMINI_AUTH_TOKEN`: Optional authentication token for the `/app` web UI. When set, users must authenticate via `/login` to access the application.
 
 ### Configuration file
 
