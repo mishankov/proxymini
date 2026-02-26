@@ -10,6 +10,7 @@ import (
 	"github.com/platforma-dev/platforma/application"
 	"github.com/platforma-dev/platforma/httpserver"
 	"github.com/platforma-dev/platforma/log"
+	"github.com/platforma-dev/platforma/scheduler"
 
 	"github.com/mishankov/proxymini/internal/config"
 	"github.com/mishankov/proxymini/internal/db"
@@ -59,33 +60,18 @@ func Build(conf *config.Config, rlDB *sqlx.DB) (*application.Application, error)
 
 	// Start retention scheduler if retention is configured
 	if conf.Retention > 0 {
-		app.OnStartFunc(func(ctx context.Context) error {
-			go startRetentionScheduler(ctx, rlSvc, conf.Retention)
+		retentionRunner := application.RunnerFunc(func(ctx context.Context) error {
+			threshold := time.Now().UTC().Unix() - int64(conf.Retention)
+			if err := rlSvc.DeleteOlderThan(threshold); err != nil {
+				log.Error("failed to delete old request logs", "error", err)
+			}
 			return nil
-		}, application.StartupTaskConfig{
-			Name:         "logs-retention-scheduler",
-			AbortOnError: false,
 		})
+		retentionScheduler := scheduler.New(cleanupInterval, retentionRunner)
+		app.RegisterService("logs-retention", retentionScheduler)
 	}
 
 	app.RegisterService("api", server)
 
 	return app, nil
-}
-
-func startRetentionScheduler(ctx context.Context, rlSvc *requestlog.RequestLogService, retentionSeconds int) {
-	ticker := time.NewTicker(cleanupInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			threshold := time.Now().UTC().Unix() - int64(retentionSeconds)
-			if err := rlSvc.DeleteOlderThan(threshold); err != nil {
-				log.Error("failed to delete old request logs", "error", err)
-			}
-		}
-	}
 }
