@@ -65,3 +65,8 @@ func (rls *RequestLogService) DeleteAll() error {
 
 	return err
 }
+
+func (rls *RequestLogService) DeleteOlderThan(cutoffTime int64) error {
+	_, err := rls.db.Exec("DELETE FROM request_log WHERE time < ?", cutoffTime)
+	return err
+}

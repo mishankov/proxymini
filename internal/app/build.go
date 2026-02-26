@@ -9,6 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/platforma-dev/platforma/application"
 	"github.com/platforma-dev/platforma/httpserver"
+	"github.com/platforma-dev/platforma/log"
 
 	"github.com/mishankov/proxymini/internal/config"
 	"github.com/mishankov/proxymini/internal/db"
@@ -52,6 +53,22 @@ func Build(conf *config.Config, rlDB *sqlx.DB) (*application.Application, error)
 		Name:         "sqlite-migrate",
 		AbortOnError: true,
 	})
+
+	// Start retention scheduler if retention is configured
+	if conf.Retention > 0 {
+		go func() {
+			ticker := time.NewTicker(time.Duration(conf.Retention) * time.Second)
+			defer ticker.Stop()
+
+			for range ticker.C {
+				cutoff := time.Now().UTC().Add(-time.Duration(conf.Retention) * time.Second).Unix()
+				err := rlSvc.DeleteOlderThan(cutoff)
+				if err != nil {
+					log.Error("failed to delete old logs", "error", err)
+				}
+			}
+		}()
+	}
 
 	app.RegisterService("api", server)
 

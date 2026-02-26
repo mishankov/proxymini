@@ -14,6 +14,10 @@ ProxyMini is a lightweight proxy server written in Go that provides HTTP request
 
 ProxyMini uses a TOML file to define proxy routing rules. Example config:
 ```toml
+# Optional: retention period in seconds for request logs
+# Logs older than this will be automatically deleted
+retention = 86400  # 24 hours
+
 [[proxy]]
 prefix = "/api"
 target = "http://api-server:8080"
