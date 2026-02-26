@@ -13,7 +13,6 @@ tasks:
     cmds:
       - bun install --frozen-lockfile
       - bun run build
-      - touch ../webapp/static/.gitkeep
 
   ui:dev:
     desc: Run SvelteKit dev server
