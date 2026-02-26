@@ -9,6 +9,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/platforma-dev/platforma/application"
 	"github.com/platforma-dev/platforma/httpserver"
+	"github.com/platforma-dev/platforma/log"
+	"github.com/platforma-dev/platforma/scheduler"
 
 	"github.com/mishankov/proxymini/internal/config"
 	"github.com/mishankov/proxymini/internal/db"
@@ -18,6 +20,9 @@ import (
 )
 
 const httpShutdownTimeout = 2 * time.Second
+
+// cleanupInterval is the frequency at which old logs are checked and deleted
+const cleanupInterval = 1 * time.Hour
 
 func Build(conf *config.Config, rlDB *sqlx.DB) (*application.Application, error) {
 	if conf == nil {
@@ -52,6 +57,19 @@ func Build(conf *config.Config, rlDB *sqlx.DB) (*application.Application, error)
 		Name:         "sqlite-migrate",
 		AbortOnError: true,
 	})
+
+	// Start retention scheduler if retention is configured
+	if conf.Retention > 0 {
+		retentionRunner := application.RunnerFunc(func(ctx context.Context) error {
+			threshold := time.Now().UTC().Unix() - int64(conf.Retention)
+			if err := rlSvc.DeleteOlderThan(threshold); err != nil {
+				log.Error("failed to delete old request logs", "error", err)
+			}
+			return nil
+		})
+		retentionScheduler := scheduler.New(cleanupInterval, retentionRunner)
+		app.RegisterService("logs-retention", retentionScheduler)
+	}
 
 	app.RegisterService("api", server)
 

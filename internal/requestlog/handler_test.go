@@ -240,6 +240,56 @@ func TestGetLogs_JSONSerialization(t *testing.T) {
 	}
 }
 
+func TestDeleteOlderThan_RemovesOnlyOldLogs(t *testing.T) {
+	testDB, cleanup := setupTestDB()
+	defer cleanup()
+
+	rlSvc := requestlog.NewRequestLogService(testDB)
+
+	// Create logs with specific timestamps
+	now := time.Now().UTC().Unix()
+	oldLog := requestlog.RequestLog{
+		ID:       "old-log-id",
+		Time:     now - 100, // 100 seconds ago
+		Method:   "GET",
+		ProxyURL: "http://example.com/old",
+		Status:   200,
+	}
+	newLog := requestlog.RequestLog{
+		ID:       "new-log-id",
+		Time:     now - 10, // 10 seconds ago
+		Method:   "POST",
+		ProxyURL: "http://example.com/new",
+		Status:   201,
+	}
+
+	rlSvc.Save(oldLog)
+	rlSvc.Save(newLog)
+
+	time.Sleep(50 * time.Millisecond)
+
+	// Delete logs older than 50 seconds
+	threshold := now - 50
+	err := rlSvc.DeleteOlderThan(threshold)
+	if err != nil {
+		t.Fatalf("failed to delete old logs: %v", err)
+	}
+
+	// Verify only new log remains
+	logs, err := rlSvc.GetList()
+	if err != nil {
+		t.Fatalf("failed to get logs: %v", err)
+	}
+
+	if len(logs) != 1 {
+		t.Errorf("expected 1 log after deletion, got %d", len(logs))
+	}
+
+	if len(logs) > 0 && logs[0].ID != "new-log-id" {
+		t.Errorf("expected remaining log to be 'new-log-id', got '%s'", logs[0].ID)
+	}
+}
+
 func createTestRequestLog(method, url string) requestlog.RequestLog {
 	return requestlog.New(
 		method,
