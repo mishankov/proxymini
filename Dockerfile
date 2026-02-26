@@ -7,7 +7,7 @@ RUN bun run build
 FROM golang:1.25 AS backend-builder
 WORKDIR /app
 COPY . .
-COPY --from=webui-builder /app/webui/build /app/webapp
+COPY --from=webui-builder /app/webui/build /app/webui/build
 RUN CGO_ENABLED=0 go build -o /app/proxymini ./cmd/proxymini
 
 FROM alpine:3
