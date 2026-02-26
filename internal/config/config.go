@@ -22,6 +22,7 @@ type Config struct {
 	ConfigPath string
 	DBPath     string
 	AuthToken  string
+	Retention  int
 	Proxies    []Proxy `toml:"proxy"`
 }
 
