@@ -14,7 +14,7 @@ import (
 	"github.com/mishankov/proxymini/internal/db"
 	"github.com/mishankov/proxymini/internal/proxy"
 	"github.com/mishankov/proxymini/internal/requestlog"
-	frontend "github.com/mishankov/proxymini/webapp"
+	frontend "github.com/mishankov/proxymini/webui"
 )
 
 const httpShutdownTimeout = 2 * time.Second

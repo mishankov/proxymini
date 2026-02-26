@@ -5,10 +5,10 @@ tasks:
     desc: Install frontend dependencies
     dir: webui
     cmds:
-      - bun install
+      - bun install --frozen-lockfile
 
   ui:build:
-    desc: Build static UI into webapp/static
+    desc: Build static UI
     dir: webui
     cmds:
       - bun install --frozen-lockfile

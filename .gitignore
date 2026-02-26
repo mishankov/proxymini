@@ -9,5 +9,4 @@ webui/node_modules/
 webui/.svelte-kit/
 webui/.vite/
 webui/.cache/
-webapp/static/*
-!webapp/static/.gitkeep
+webui/build/

@@ -1,19 +1,17 @@
 FROM oven/bun:1 AS webui-builder
-WORKDIR /app
-COPY webui ./webui
-COPY webapp ./webapp
+COPY webui /app/webui
 WORKDIR /app/webui
 RUN bun install --frozen-lockfile
 RUN bun run build
 
-FROM golang:1.24 AS builder
+FROM golang:1.25 AS backend-builder
 WORKDIR /app
 COPY . .
-COPY --from=webui-builder /app/webapp/static /app/webapp/static
+COPY --from=webui-builder /app/webui/build /app/webapp
 RUN CGO_ENABLED=0 go build -o /app/proxymini ./cmd/proxymini
 
 FROM alpine:3
-COPY --from=builder /app/proxymini /app/proxymini
+COPY --from=backend-builder /app/proxymini /app/proxymini
 RUN mkdir /app/data
 ENV PROXYMINI_DB="/app/data/rl.db"
 WORKDIR /app
