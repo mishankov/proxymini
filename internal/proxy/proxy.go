@@ -123,7 +123,7 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func handleError(w http.ResponseWriter, err error, status int) {
 	log.ErrorContext(context.Background(), "request handling error", "status", status, "error", err)
-	// w.WriteHeader(status)
+	w.WriteHeader(status)
 	w.Write([]byte(err.Error()))
 }
 
