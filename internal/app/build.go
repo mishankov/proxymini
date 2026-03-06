@@ -124,8 +124,8 @@ const loginPageHTML = `<!DOCTYPE html>
     </script>
 </body>
 </html>`
-// cleanupInterval is the frequency at which old logs are checked and deleted
-const cleanupInterval = 1 * time.Hour
+// cleanupSchedule is the frequency at which old logs are checked and deleted.
+const cleanupSchedule = "@every 1h"
 
 func Build(conf *config.Config, rlDB *sqlx.DB) (*application.Application, error) {
 	if conf == nil {
@@ -233,7 +233,10 @@ func Build(conf *config.Config, rlDB *sqlx.DB) (*application.Application, error)
 			}
 			return nil
 		})
-		retentionScheduler := scheduler.New(cleanupInterval, retentionRunner)
+		retentionScheduler, err := scheduler.New(cleanupSchedule, retentionRunner)
+		if err != nil {
+			return nil, fmt.Errorf("create retention scheduler: %w", err)
+		}
 		app.RegisterService("logs-retention", retentionScheduler)
 	}
 
