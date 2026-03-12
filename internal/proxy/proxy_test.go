@@ -267,7 +267,7 @@ target = "` + upstream.URL + `"`
 	}
 }
 
-func TestProxyInsecureSkipVerify(t *testing.T) {
+func TestProxyInsecureTLSSkipVerify(t *testing.T) {
 	testDB, cleanupDB := setupTestDB()
 	defer cleanupDB()
 
@@ -280,7 +280,7 @@ func TestProxyInsecureSkipVerify(t *testing.T) {
 	configContent := `[[proxy]]
 prefix = "/api"
 target = "` + upstream.URL + `"
-insecureSkipVerify = true`
+insecureTLSSkipVerify = true`
 
 	conf, cleanupConfig := createTestConfig(configContent)
 	defer cleanupConfig()

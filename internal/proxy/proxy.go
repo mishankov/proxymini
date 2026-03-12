@@ -40,13 +40,13 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	target := ""
 	prefix := ""
 	skipLogging := false
-	insecureSkipVerify := false
+	insecureTLSSkipVerify := false
 	for _, proxy := range ph.config.Proxies {
 		if strings.HasPrefix(r.URL.Path, proxy.Prefix) {
 			target = proxy.Target
 			prefix = proxy.Prefix
 			skipLogging = proxy.SkipLogging
-			insecureSkipVerify = proxy.InsecureSkipVerify
+			insecureTLSSkipVerify = proxy.InsecureTLSSkipVerify
 		}
 	}
 
@@ -82,7 +82,7 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := http.DefaultClient
-	if insecureSkipVerify {
+	if insecureTLSSkipVerify {
 		client = &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
