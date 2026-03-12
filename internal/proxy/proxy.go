@@ -19,12 +19,23 @@ import (
 )
 
 type ProxyHandler struct {
-	rlSvc  *requestlog.RequestLogService
-	config *config.Config
+	rlSvc          *requestlog.RequestLogService
+	config         *config.Config
+	insecureClient *http.Client
 }
 
 func NewProxyHandler(rlSvc *requestlog.RequestLogService, config *config.Config) *ProxyHandler {
-	return &ProxyHandler{rlSvc: rlSvc, config: config}
+	insecureClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
+	return &ProxyHandler{
+		rlSvc:          rlSvc,
+		config:         config,
+		insecureClient: insecureClient,
+	}
 }
 
 func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -83,11 +94,7 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	client := http.DefaultClient
 	if insecureTLSSkipVerify {
-		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
-		}
+		client = ph.insecureClient
 	}
 
 	resp, err := client.Do(req)
