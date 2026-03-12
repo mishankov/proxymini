@@ -267,6 +267,41 @@ target = "` + upstream.URL + `"`
 	}
 }
 
+func TestProxyInsecureTLSSkipVerify(t *testing.T) {
+	testDB, cleanupDB := setupTestDB()
+	defer cleanupDB()
+
+	upstream := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("tls-response"))
+	}))
+	defer upstream.Close()
+
+	configContent := `[[proxy]]
+prefix = "/api"
+target = "` + upstream.URL + `"
+insecureTLSSkipVerify = true`
+
+	conf, cleanupConfig := createTestConfig(configContent)
+	defer cleanupConfig()
+
+	handler := newTestProxyHandler(testDB, conf)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/test", nil)
+	rr := httptest.NewRecorder()
+
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body, _ := io.ReadAll(rr.Body)
+	if string(body) != "tls-response" {
+		t.Errorf("expected body 'tls-response', got '%s'", string(body))
+	}
+}
+
 func setupTestDB() (*sqlx.DB, func()) {
 	testDB, err := sqlx.Connect("sqlite", ":memory:")
 	if err != nil {

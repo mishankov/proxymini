@@ -3,6 +3,7 @@ package proxy
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -18,12 +19,23 @@ import (
 )
 
 type ProxyHandler struct {
-	rlSvc  *requestlog.RequestLogService
-	config *config.Config
+	rlSvc          *requestlog.RequestLogService
+	config         *config.Config
+	insecureClient *http.Client
 }
 
 func NewProxyHandler(rlSvc *requestlog.RequestLogService, config *config.Config) *ProxyHandler {
-	return &ProxyHandler{rlSvc: rlSvc, config: config}
+	insecureClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
+	return &ProxyHandler{
+		rlSvc:          rlSvc,
+		config:         config,
+		insecureClient: insecureClient,
+	}
 }
 
 func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -39,11 +51,13 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	target := ""
 	prefix := ""
 	skipLogging := false
+	insecureTLSSkipVerify := false
 	for _, proxy := range ph.config.Proxies {
 		if strings.HasPrefix(r.URL.Path, proxy.Prefix) {
 			target = proxy.Target
 			prefix = proxy.Prefix
 			skipLogging = proxy.SkipLogging
+			insecureTLSSkipVerify = proxy.InsecureTLSSkipVerify
 		}
 	}
 
@@ -78,7 +92,12 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	client := http.DefaultClient
+	if insecureTLSSkipVerify {
+		client = ph.insecureClient
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		handleError(w, fmt.Errorf("error making request: %w", err), http.StatusInternalServerError)
 		return

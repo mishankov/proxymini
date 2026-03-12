@@ -27,9 +27,10 @@ type Config struct {
 }
 
 type Proxy struct {
-	Prefix      string `toml:"prefix"`
-	Target      string `toml:"target"`
-	SkipLogging bool   `toml:"skipLogging"`
+	Prefix                string `toml:"prefix"`
+	Target                string `toml:"target"`
+	SkipLogging           bool   `toml:"skipLogging"`
+	InsecureTLSSkipVerify bool   `toml:"insecureTLSSkipVerify"`
 }
 
 func New() (*Config, error) {
