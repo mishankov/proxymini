@@ -25,6 +25,24 @@ target = "http://auth-service:9000"
 
 More specific rules should be before more general ones.
 
+#### Proxy Configuration Options
+
+Each proxy entry supports the following options:
+
+- `prefix` (required): The URL path prefix to match
+- `target` (required): The target URL to proxy requests to
+- `skipLogging` (optional): Set to `true` to disable request logging for this proxy route
+- `insecureSkipVerify` (optional): Set to `true` to skip TLS certificate verification when proxying to HTTPS targets with self-signed or invalid certificates
+
+Example with all options:
+```toml
+[[proxy]]
+prefix = "/api"
+target = "https://api-server:8443"
+skipLogging = false
+insecureSkipVerify = true
+```
+
 ## Runtime commands
 
 ProxyMini now runs on Platforma's `application` + `httpserver` packages.

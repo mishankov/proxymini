@@ -3,6 +3,7 @@ package proxy
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -39,11 +40,13 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	target := ""
 	prefix := ""
 	skipLogging := false
+	insecureSkipVerify := false
 	for _, proxy := range ph.config.Proxies {
 		if strings.HasPrefix(r.URL.Path, proxy.Prefix) {
 			target = proxy.Target
 			prefix = proxy.Prefix
 			skipLogging = proxy.SkipLogging
+			insecureSkipVerify = proxy.InsecureSkipVerify
 		}
 	}
 
@@ -78,7 +81,16 @@ func (ph *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	client := http.DefaultClient
+	if insecureSkipVerify {
+		client = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
+		}
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		handleError(w, fmt.Errorf("error making request: %w", err), http.StatusInternalServerError)
 		return
