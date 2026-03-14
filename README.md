@@ -43,6 +43,21 @@ skipLogging = false
 insecureTLSSkipVerify = true
 ```
 
+#### Logs Retention
+
+ProxyMini can automatically clean up old request logs to prevent database bloat. Configure retention using the `retention` parameter in your TOML config file:
+
+```toml
+# Global retention setting (seconds)
+retention = 604800  # 7 days
+
+[[proxy]]
+prefix = "/api"
+target = "http://api-server:8080"
+```
+
+- `retention` (optional): Time in seconds to keep request logs before automatic deletion. When set to a value greater than 0, ProxyMini runs a cleanup job every hour to delete logs older than the retention period. Default is `0` (retention disabled - logs are kept indefinitely).
+
 ## Runtime commands
 
 ProxyMini now runs on Platforma's `application` + `httpserver` packages.
