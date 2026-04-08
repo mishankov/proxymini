@@ -6,13 +6,13 @@ require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/platforma-dev/platforma v0.1.0-alpha.20
+	github.com/platforma-dev/platforma v0.1.0-alpha.23
 	modernc.org/sqlite v1.48.0
 )
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/lib/pq v1.11.1 // indirect
+	github.com/lib/pq v1.11.2 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
